@@ -108,6 +108,16 @@
         {
             return value1.Value | value2.Value;
         }
+    
+        public static int operator +(Bit value1, Bit value2)
+        {
+            return (value1.Value ? 1 : 0) + (value2.Value ? 1 : 0);
+        }
+    
+        public static int operator -(Bit value1, Bit value2)
+        {
+            return (value1.Value ? 1 : 0) - (value2.Value ? 1 : 0);
+        }
 
         public static Bit operator &(Bit value1, Bit value2)
         {
