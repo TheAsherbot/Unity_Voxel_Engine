@@ -104,6 +104,10 @@ public class Grid3D
     {
         return cellSize;
     }
+    public int GetCellSizeInt()
+    {
+        return Mathf.RoundToInt(cellSize);
+    }
 
     /// <summary>
     /// This gets the world position of a grid object using its x, and y position

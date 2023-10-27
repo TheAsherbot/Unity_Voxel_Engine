@@ -53,7 +53,7 @@ public class VoxelGrid<TGridObject> : Grid3D
                     {
                         string nodeToString = gridArray[x, y, z].ToString();
                         debugTextArray[x, y, z] = CreateWorldText(parent, nodeToString, GetWorldPosition(x, y, z) + new Vector3(cellSize, cellSize, cellSize) * .5f,
-                            baseFontSize * Mathf.RoundToInt(cellSize) / (nodeToString.Length == 0 ? 1 : nodeToString.Length), Color.white, TextAnchor.MiddleCenter);
+                            baseFontSize * Mathf.RoundToInt(cellSize), Color.white, TextAnchor.MiddleCenter);
                         if (x != width)
                         {
                             Debug.DrawLine(GetWorldPosition(x, y, z), GetWorldPosition(x + 1, y, z), Color.white, 100f);
@@ -84,7 +84,7 @@ public class VoxelGrid<TGridObject> : Grid3D
     /// <param name="cellSize">This is how big the grid objects are</param>
     /// <param name="originPosition">This is the position of the bottom left grid object(AKA the origin)</param>
     /// <param name="createGridObject">This is the the value that all the gid object will default to<code>(GenericGrid grid, int x, int y, int z) => new TGridObject(grid, x, y, z)</code></param>
-    public VoxelGrid(int width, int height, int depth, float cellSize, Vector2 originPosition, Func<VoxelGrid<TGridObject>, int, int, TGridObject> createGridObject)
+    public VoxelGrid(int width, int height, int depth, float cellSize, Vector2 originPosition, Func<VoxelGrid<TGridObject>, int, int, int, TGridObject> createGridObject)
                 : base(width, height, depth, cellSize, originPosition)
     {
         this.width = width;
@@ -100,7 +100,7 @@ public class VoxelGrid<TGridObject> : Grid3D
             {
                 for (int z = 0; z < gridArray.GetLength(2); z++)
                 {
-                    gridArray[x, y, z] = createGridObject(this, x, y);
+                    gridArray[x, y, z] = createGridObject(this, x, y, z);
                 }
             }
         }
