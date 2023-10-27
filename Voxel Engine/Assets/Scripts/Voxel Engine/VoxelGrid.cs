@@ -52,10 +52,8 @@ public class VoxelGrid<TGridObject> : Grid3D
                     for (int z = 0; z < depth; z++)
                     {
                         string nodeToString = gridArray[x, y, z].ToString();
-                        int length = nodeToString.Length;
-                        Debug.Log(length);
                         debugTextArray[x, y, z] = CreateWorldText(parent, nodeToString, GetWorldPosition(x, y, z) + new Vector3(cellSize, cellSize, cellSize) * .5f,
-                            baseFontSize * Mathf.RoundToInt(cellSize) / (length == 0 ? 1 : length), Color.white, TextAnchor.MiddleCenter);
+                            baseFontSize * Mathf.RoundToInt(cellSize) / (nodeToString.Length == 0 ? 1 : nodeToString.Length), Color.white, TextAnchor.MiddleCenter);
                         if (x != width)
                         {
                             Debug.DrawLine(GetWorldPosition(x, y, z), GetWorldPosition(x + 1, y, z), Color.white, 100f);
