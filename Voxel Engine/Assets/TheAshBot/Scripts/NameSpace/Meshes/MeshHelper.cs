@@ -10,23 +10,25 @@ namespace TheAshBot.Meshes
 
 
         /// <summary>
-        /// This assines the mesh vertices, uv, and triangles to the vertices, uv, and triangle variables
+        /// This assigns the mesh vertices, uv, and triangles to the vertices, uv, and triangle variables
         /// </summary>
-        public static Mesh AssineVerticesUvAndTrianglesToMesh(Vector3[] vertices, Vector2[] uv, int[] triangles)
+        public static Mesh AssignVerticesUvAndTrianglesToMesh(Vector3[] vertices, Vector2[] uv, int[] triangles)
         {
-            Mesh mesh = new Mesh();
-            // Assine the vertices, the uv, and the triangles to the mesh
-            mesh.vertices = vertices;
-            mesh.uv = uv;
-            mesh.triangles = triangles;
+            Mesh mesh = new Mesh
+            {
+                // Assign the vertices, the uv, and the triangles to the mesh
+                vertices = vertices,
+                uv = uv,
+                triangles = triangles
+            };
             return mesh;
         }
 
         /// <summary>
         /// This makes the UV numbers the same as the vertex numbers
         /// </summary>
-        /// <param name="vertices">are the vartices values that are going to be assined to the UV's</param>
-        public static Vector2[] AssineUvsFromVertices(Vector3[] vertices)
+        /// <param name="vertices">are the vertices values that are going to be assigned to the UV's</param>
+        public static Vector2[] AssignUvsFromVertices(Vector3[] vertices)
         {
             return AssignUvsFromVertices(vertices, Vector3.zero);
         }
@@ -48,12 +50,12 @@ namespace TheAshBot.Meshes
         }
 
         /// <summary>
-        /// This makes triangles and assines triangle vertices
+        /// This makes triangles and assigns triangle vertices
         /// </summary>
-        /// <param name="startTriangleNumber">This is the first triangle number that gets assined</param>
-        /// <param name="firstTriangleValue">This is the value that the first triangle number is geting assined to</param>
-        /// <param name="secondTriangleValue">This is the value that the second triangle number is geting assined to</param>
-        /// <param name="thirdTriangleValue">This is the value that the third triangle number is geting assined to</param>
+        /// <param name="startTriangleNumber">This is the first triangle number that gets assigned</param>
+        /// <param name="firstTriangleValue">This is the value that the first triangle number is getting assigned to</param>
+        /// <param name="secondTriangleValue">This is the value that the second triangle number is getting assigned to</param>
+        /// <param name="thirdTriangleValue">This is the value that the third triangle number is getting assigned to</param>
         public static void MakeTriangle(ref int[] triangles, int startTriangleNumber, int firstTriangleValue, int secondTriangleValue, int thirdTriangleValue)
         {
             triangles[startTriangleNumber] = firstTriangleValue;
@@ -63,12 +65,11 @@ namespace TheAshBot.Meshes
             triangles[startTriangleNumber] = thirdTriangleValue;
         }
         /// <summary>
-        /// This makes triangles and assines triangle vertices
+        /// This makes triangles and assigns triangle vertices
         /// </summary>
-        /// <param name="startTriangleNumber">This is the first triangle number that gets assined</param>
-        /// <param name="firstTriangleValue">This is the value that the first triangle number is geting assined to</param>
-        /// <param name="secondTriangleValue">This is the value that the second triangle number is geting assined to</param>
-        /// <param name="thirdTriangleValue">This is the value that the third triangle number is geting assined to</param>
+        /// <param name="firstTriangleValue">This is the value that the first triangle number is getting assigned to</param>
+        /// <param name="secondTriangleValue">This is the value that the second triangle number is getting assigned to</param>
+        /// <param name="thirdTriangleValue">This is the value that the third triangle number is getting assigned to</param>
         public static void MakeTriangle(ref List<int> triangles, int firstTriangleValue, int secondTriangleValue, int thirdTriangleValue)
         {
             triangles.Add(firstTriangleValue);
@@ -82,25 +83,21 @@ namespace TheAshBot.Meshes
         /// </summary>
         /// <param name="x">is the x position as pixel on the texture</param>
         /// <param name="y">is the y position as pixel on the texture</param>
-        /// <param name="texureWidth">is the width of the texture</param>
+        /// <param name="textureWidth">is the width of the texture</param>
         /// <param name="textureHeight">is the heigh of the texture</param>
         /// <returns>UV Coordinates for the point on the texture</returns>
-        public static Vector2 ConvertPixelsToUVCoordinates(int x, int y, int texureWidth, int textureHeight)
+        public static Vector2 ConvertPixelsToUVCoordinates(int x, int y, int textureWidth, int textureHeight)
         {
-            return new Vector2((float)x / texureWidth, (float)y / textureHeight);
+            return new Vector2((float)x / textureWidth, (float)y / textureHeight);
         }
 
-
-
-
-        #region Me Not Understand
         /// <summary>
-        /// will make all the Vertices, Uv, and triangle arrays acording to number of quads specified. (4 vertices/uvs per 2 triangle)
+        /// will make all the Vertices, Uv, and triangle arrays according to number of quads specified. (4 vertices/uvs per 2 triangle)
         /// </summary>
         /// <param name="quadCount">is the number of quads that the mesh will have</param>
-        /// <param name="vertices">is an out variable that contians a empty Vector3 array with 4 time the number of vartices as quads</param>
-        /// <param name="uvs">is an out variable that contians a empty Vector2 array with 4 time the number of vartices as quads</param>
-        /// <param name="triangles">is an out variable that contians a empty int array with 6 time the number of vartices as quads</param>
+        /// <param name="vertices">is an out variable that contains a empty Vector3 array with 4 time the number of vertices as quads</param>
+        /// <param name="uvs">is an out variable that contains a empty Vector2 array with 4 time the number of vertices as quads</param>
+        /// <param name="triangles">is an out variable that contains a empty int array with 6 time the number of vertices as quads</param>
         public static void CreateEmptyMeshArray(int quadCount, out Vector3[] vertices, out Vector2[] uvs, out int[] triangles)
         {
             vertices = new Vector3[4 * quadCount];
@@ -109,6 +106,8 @@ namespace TheAshBot.Meshes
         }
 
 
+
+        #region Me Not Understand
         public static void AddToMeshArrays(Vector3[] vertices, Vector2[] uvs, int[] triangles, int index, Vector3 pos, float rotation, Vector3 baseSize, Vector2 uv00, Vector2 uv11)
         {
             //Relocate vertices
@@ -168,7 +167,7 @@ namespace TheAshBot.Meshes
         private static Quaternion GetQuaternionEuler(float rotationFloat)
         {
             int rotation = Mathf.RoundToInt(rotationFloat);
-            rotation = rotation % 360;
+            rotation %= 360;
             if (rotation < 0) rotation += 360;
             //if (rotation >= 360) rotation -= 360;
             if (cachedQuaternionEulerArray == null) CacheQuaternionEuler();

@@ -1,9 +1,7 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class VoxelGrid<TGridObject> : Grid3D
+public class GenericGrid3D<TGridObject> : Grid3D
 {
 
 
@@ -17,10 +15,10 @@ public class VoxelGrid<TGridObject> : Grid3D
     /// <param name="height">THis is the height of the grid</param>
     /// <param name="cellSize">This is how big the grid objects are</param>
     /// <param name="originPosition">This is the position of the bottom left grid object(AKA the origin)</param>
-    /// <param name="createGridObject">This is the the value that all the gid object will default to <code>(GenericGrid grid, int x, int y, int z) => new TGridObject(grid, x, y int z)</code></param>
+    /// <param name="createGridObject">This is the the value that all the gid object will default to <code>(GenericGrid TGridObject grid, int x, int y, int z) => new TGridObject(grid, x, y, z)</code></param>
     /// <param name="showDebug">If this is true the it will show the lines of the grid</param>
     /// <param name="parent">This is the parent object of the text(This is only needed if show debug is true)</param>
-    public VoxelGrid(int width, int height, int depth, float cellSize, Vector2 originPosition, Func<VoxelGrid<TGridObject>, int, int, int, TGridObject> createGridObject, bool showDebug, Transform parent, int baseFontSize = 20)
+    public GenericGrid3D(int width, int height, int depth, float cellSize, Vector3 originPosition, Func<GenericGrid3D<TGridObject>, int, int, int, TGridObject> createGridObject, bool showDebug, Transform parent, int baseFontSize = 20)
                 : base(width, height, depth, cellSize, originPosition, showDebug, parent)
     {
         this.width = width;
@@ -84,7 +82,7 @@ public class VoxelGrid<TGridObject> : Grid3D
     /// <param name="cellSize">This is how big the grid objects are</param>
     /// <param name="originPosition">This is the position of the bottom left grid object(AKA the origin)</param>
     /// <param name="createGridObject">This is the the value that all the gid object will default to<code>(GenericGrid grid, int x, int y, int z) => new TGridObject(grid, x, y, z)</code></param>
-    public VoxelGrid(int width, int height, int depth, float cellSize, Vector2 originPosition, Func<VoxelGrid<TGridObject>, int, int, int, TGridObject> createGridObject)
+    public GenericGrid3D(int width, int height, int depth, float cellSize, Vector3 originPosition, Func<GenericGrid3D<TGridObject>, int, int, int, TGridObject> createGridObject)
                 : base(width, height, depth, cellSize, originPosition)
     {
         this.width = width;
@@ -136,6 +134,34 @@ public class VoxelGrid<TGridObject> : Grid3D
     {
         GetXYZ(worldPosition, out int x, out int y, out int z);
         SetGridObject(x, y, z, value);
+    }
+    /// <summary>
+    /// THis sets the value of a cell using it's 
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="value"></param>
+    public void SetGridObjectWithoutNotifying(int x, int y, int z, TGridObject value)
+    {
+        if (x >= 0 && y >= 0 && z >= 0 && x < width && y < height && z < depth)
+        {
+            if (value == null)
+            {
+                value = default;
+            }
+
+            gridArray[x, y, z] = value;
+        }
+    }
+    /// <summary>
+    /// This sets the value of a cell using it's world position
+    /// </summary>
+    /// <param name="worldPosition">This is the grid objects world position<</param>
+    /// <param name="value">This is the value it is being set to</param>
+    public void SetGridObjectWithoutNotifying(Vector3 worldPosition, TGridObject value)
+    {
+        GetXYZ(worldPosition, out int x, out int y, out int z);
+        SetGridObjectWithoutNotifying(x, y, z, value);
     }
 
     /// <summary>

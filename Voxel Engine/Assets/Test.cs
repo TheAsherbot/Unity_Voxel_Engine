@@ -1,164 +1,144 @@
 using System.Collections.Generic;
 
-using TheAshBot.Meshes;
-
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class Test : MonoBehaviour
 {
 
-    private VoxelGrid<VoxelNode> grid;
-
+    private GenericGrid3D<VoxelNode> grid;
+    [SerializeField] private Transform parent;
+    [SerializeField] private Material material;
 
     private void Start()
     {
-        Mesh mesh = GetComponent<MeshFilter>().mesh;
-        Debug.Log(mesh.name + " has " + mesh.subMeshCount + " sub meshes!");
+        VoxelRenderer voxelRenderer = new VoxelRenderer(material);
+        grid = voxelRenderer.GetGrid();
 
-        /*grid = new VoxelGrid<VoxelNode>(16, 16, 16, 1, Vector3.zero, (VoxelGrid<VoxelNode> grid, int x, int y, int z) => new VoxelNode(grid, x, y, z));
-
-        List<int> triangles = new List<int>();
-        List<Vector3> vertices = new List<Vector3>();
-
-        int vertexIndex = 0;
         for (int x = 0; x < grid.GetWidth(); x++)
         {
             for (int y = 0; y < grid.GetHeight(); y++)
             {
                 for (int z = 0; z < grid.GetDepth(); z++)
                 {
-                    if (grid.GetGridObject(x, y, z).type.GetValue_Byte() == 1)
-                    {
-                        MakeCubeVertices(ref vertices, x, y, z);
-                        MakeCubeTriangles(ref triangles, vertexIndex);
-                        vertexIndex += 8;
-                    }
+                    VoxelNode voxelNode = grid.GetGridObject(x, y, z);
+                    voxelNode.type.SetBit(0, 1);
+                    grid.SetGridObjectWithoutNotifying(x, y, z, voxelNode);
                 }
             }
         }
 
-        Mesh mesh = new Mesh();
+        grid.TriggerGridObjectChanged(0, 0, 0);
+    }
 
-        for (int i = 0; i < vertices.Count; i++)
+/*
+    private void Update()
+    {
+        int size = 20;
+        if (Input.GetKeyDown(KeyCode.Q))
         {
-            Debug.Log("Vertex " + i + ": " + vertices[i]);
+            for (int x = 0; x < size; x++)
+            {
+                for (int y = 0; y < size; y++)
+                {
+                    for (int z = 0; z < size; z++)
+                    {
+                        GameObject newGameObject = new GameObject($"{x}, {y}, {z}", typeof(MeshFilter), typeof(MeshRenderer));
+                        newGameObject.transform.parent = parent;
+                        newGameObject.transform.position = new Vector3(x, y, z);
+                        newGameObject.GetComponent<MeshFilter>().mesh = MakeCube();
+                        newGameObject.GetComponent<MeshRenderer>().material = GetComponent<MeshRenderer>().material;
+                    }
+                }
+            }
         }
-
-        mesh.SetVertices(vertices);
-        mesh.SetTriangles(triangles, 0);
-
-        mesh.RecalculateNormals();
-        mesh.RecalculateBounds();*/
-
-        mesh = MakeCube2();
-
-        GetComponent<MeshFilter>().mesh = mesh;
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            for (int x = 0; x < size; x++)
+            {
+                for (int y = 0; y < size; y++)
+                {
+                    for (int z = 0; z < size; z++)
+                    {
+                        GameObject newGameObject = new GameObject($"{x}, {y}, {z}", typeof(MeshFilter), typeof(MeshRenderer));
+                        newGameObject.transform.parent = parent;
+                        gameObject.transform.position = new Vector3(x, y, z);
+                        newGameObject.GetComponent<MeshFilter>().mesh = MakeCube2();
+                        newGameObject.GetComponent<MeshRenderer>().material = GetComponent<MeshRenderer>().material;
+                    }
+                }
+            }
+        }
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            while (parent.childCount > 0)
+            {
+                DestroyImmediate(parent.GetChild(0).gameObject);
+            }
+        }
     }
-
-    private void MakeCubeVertices(ref List<Vector3> vertices, int x, int y, int z)
-    {
-        int cellSize = grid.GetCellSizeInt();
-
-        vertices.Add(grid.GetWorldPosition(x, y, z)); // 0
-        vertices.Add(grid.GetWorldPosition(x, y + 1, z)); // 1
-        vertices.Add(grid.GetWorldPosition(x + 1, y, z)); // 2
-        vertices.Add(grid.GetWorldPosition(x + 1, y + 1, z)); // 3
-        vertices.Add(grid.GetWorldPosition(x, y, z + 1)); // 4
-        vertices.Add(grid.GetWorldPosition(x, y + 1, z + 1)); // 5
-        vertices.Add(grid.GetWorldPosition(x + 1, y, z + 1)); // 6
-        vertices.Add(grid.GetWorldPosition(x + 1, y + 1, z + 1)); // 7
-    }
-
-    private void MakeCubeTriangles(ref List<int> triangles, int startVertexIndex)
-    {
-        // Front
-        MeshHelper.MakeTriangle(ref triangles, startVertexIndex, startVertexIndex + 1, startVertexIndex + 2);
-        MeshHelper.MakeTriangle(ref triangles, startVertexIndex + 1, startVertexIndex + 3, startVertexIndex + 2);
-
-        // Back
-        MeshHelper.MakeTriangle(ref triangles, startVertexIndex + 6, startVertexIndex + 5, startVertexIndex + 4);
-        MeshHelper.MakeTriangle(ref triangles, startVertexIndex + 6, startVertexIndex + 7, startVertexIndex + 5);
-
-        // Top
-        MeshHelper.MakeTriangle(ref triangles, startVertexIndex + 1, startVertexIndex + 5, startVertexIndex + 3);
-        MeshHelper.MakeTriangle(ref triangles, startVertexIndex + 5, startVertexIndex + 7, startVertexIndex + 3);
-
-        // Bottom
-        MeshHelper.MakeTriangle(ref triangles, startVertexIndex, startVertexIndex + 2, startVertexIndex + 4);
-        MeshHelper.MakeTriangle(ref triangles, startVertexIndex + 2, startVertexIndex + 6, startVertexIndex + 4);
-
-        // Right
-        MeshHelper.MakeTriangle(ref triangles, startVertexIndex + 2, startVertexIndex + 3, startVertexIndex + 7);
-        MeshHelper.MakeTriangle(ref triangles, startVertexIndex + 2, startVertexIndex + 7, startVertexIndex + 6);
-
-        // Left
-        MeshHelper.MakeTriangle(ref triangles, startVertexIndex + 0, startVertexIndex + 5, startVertexIndex + 1);
-        MeshHelper.MakeTriangle(ref triangles, startVertexIndex + 0, startVertexIndex + 4, startVertexIndex + 5);
-    }
-
-
-
+*/
 
     private Mesh MakeCube()
     {
         Mesh mesh = new Mesh();
 
-        List<Vector3> vertices = new List<Vector3>();
+        List<Vector3> vertices = new List<Vector3>()
+        {
+            new Vector3(0, 0, 1), // 0
+            new Vector3(0, 1, 1), // 1
+            new Vector3(1, 1, 1), // 2
+            new Vector3(1, 0, 1), // 3
+            new Vector3(0, 0, 0), // 4
+            new Vector3(0, 1, 0), // 5
+            new Vector3(1, 1, 0), // 6
+            new Vector3(1, 0, 0), // 7
+        };
 
-        vertices.Add(new Vector3(0, 0, 0)); // 0
-        vertices.Add(new Vector3(0, 1, 0)); // 1
-        vertices.Add(new Vector3(1, 0, 0)); // 2
-        vertices.Add(new Vector3(1, 1, 0)); // 3
-        vertices.Add(new Vector3(0, 0, 1)); // 4
-        vertices.Add(new Vector3(0, 1, 1)); // 5
-        vertices.Add(new Vector3(1, 0, 1)); // 6
-        vertices.Add(new Vector3(1, 1, 1)); // 7
+        List<Vector2> uvs = new List<Vector2>()
+        {
+            new Vector2(0, 0),
+            new Vector2(0, 1),
+            new Vector2(1, 1),
+            new Vector2(1, 0),
+            new Vector2(0, 0),
+            new Vector2(0, 1),
+            new Vector2(1, 1),
+            new Vector2(1, 0),
+        };
 
-        List<Vector2> uvs = new List<Vector2>();
+        List<int> triangles = new List<int>()
+        {
+            // Front
+            3, 2, 1,
+            3, 1, 0,
 
-        uvs.Add(new Vector2(0, 0));
-        uvs.Add(new Vector2(0, 1));
-        uvs.Add(new Vector2(1, 0));
-        uvs.Add(new Vector2(1, 1));
+            // Back
+            4, 5, 6,
+            4, 6, 7,
 
-        uvs.Add(new Vector2(0, 0));
-        uvs.Add(new Vector2(0, 1));
-        uvs.Add(new Vector2(1, 0));
-        uvs.Add(new Vector2(1, 1));
+            // Left
+            0, 1, 5,
+            0, 5, 4,
 
-        List<int> triangles = new List<int>();
+            // Right
+            7, 6, 2,
+            7, 2, 3,
 
-        // Front
-        MeshHelper.MakeTriangle(ref triangles, 0, 1, 2);
-        MeshHelper.MakeTriangle(ref triangles, 1, 3, 2);
+            // Top
+            5, 1, 2,
+            5, 2, 6,
 
-        // Back
-        MeshHelper.MakeTriangle(ref triangles, 6, 5, 4);
-        MeshHelper.MakeTriangle(ref triangles, 6, 7, 5);
+            // Bottom
+            0, 4, 7,
+            0, 7, 3,
+        };
 
-        // Top
-        MeshHelper.MakeTriangle(ref triangles, 1, 5, 3);
-        MeshHelper.MakeTriangle(ref triangles, 5, 7, 3);
-
-        // Bottom
-        MeshHelper.MakeTriangle(ref triangles, 0, 2, 4);
-        MeshHelper.MakeTriangle(ref triangles, 2, 6, 4);
-
-        // Right
-        MeshHelper.MakeTriangle(ref triangles, 2, 3, 7);
-        MeshHelper.MakeTriangle(ref triangles, 2, 7, 6);
-
-        // Left
-        MeshHelper.MakeTriangle(ref triangles, 0, 5, 1);
-        MeshHelper.MakeTriangle(ref triangles, 0, 4, 5);
-
-        mesh.SetVertices(vertices);
+        mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles.ToArray();
-        mesh.SetUVs(0, uvs);
+        mesh.uv = uvs.ToArray();
 
-        mesh.RecalculateNormals();
         mesh.RecalculateBounds();
+        mesh.RecalculateNormals();
         mesh.RecalculateTangents();
 
         return mesh;
@@ -167,42 +147,115 @@ public class Test : MonoBehaviour
     
     private Mesh MakeCube2()
     {
-        Mesh mesh = GetComponent<MeshFilter>().mesh;
+        Mesh mesh = new Mesh();
 
-        List<Vector3> vertices = new List<Vector3>();
-        mesh.GetVertices(vertices);
-
-        for (int i = 0; i < vertices.Count; i++)
+        List<Vector3> vertices = new List<Vector3>()
         {
-            Debug.Log("Vertices " + i + ": " + vertices[i]);
-        }
+            // Front 0
+            new Vector3(1, 0, 1), // 0
+            new Vector3(1, 1, 1), // 1
+            new Vector3(0, 1, 1), // 2
+            new Vector3(0, 0, 1), // 3
 
-        List<Vector2> uvs = new List<Vector2>();
-        mesh.GetUVs(0, uvs);
+            // Back 4
+            new Vector3(0, 0, 0), // 0
+            new Vector3(0, 1, 0), // 1
+            new Vector3(1, 1, 0), // 2
+            new Vector3(1, 0, 0), // 3
 
-        for (int i = 0; i < uvs.Count; i++)
+            // Left 8
+            new Vector3(1, 0, 0), // 0
+            new Vector3(1, 1, 0), // 1
+            new Vector3(1, 1, 1), // 2
+            new Vector3(1, 0, 1), // 3
+
+            // Right 12
+            new Vector3(0, 0, 1), // 0
+            new Vector3(0, 1, 1), // 1
+            new Vector3(0, 1, 0), // 2
+            new Vector3(0, 0, 0), // 3
+
+            // Top 16
+            new Vector3(0, 1, 0), // 0
+            new Vector3(0, 1, 1), // 1
+            new Vector3(1, 1, 1), // 2
+            new Vector3(1, 1, 0), // 3
+
+            // Bottom 20
+            new Vector3(0, 0, 1), // 0
+            new Vector3(0, 0, 0), // 1
+            new Vector3(1, 0, 0), // 2
+            new Vector3(1, 0, 1), // 3
+        };
+        List<Vector2> uvs = new List<Vector2>()
         {
-            Debug.Log("uvs " + i + ": " + uvs[i]);
-        }
+            // Front
+            new Vector2(0, 0), // 0
+            new Vector2(0, 1), // 1
+            new Vector2(1, 1), // 2
+            new Vector2(1, 0), // 3
 
-        List<int> triangles = new List<int>();
-        mesh.GetTriangles(triangles, 0);
+            // Back
+            new Vector2(0, 0), // 0
+            new Vector2(0, 1), // 1
+            new Vector2(1, 1), // 2
+            new Vector2(1, 0), // 3
 
-        for (int i = 0; i < triangles.Count; i++)
+            // Left
+            new Vector2(0, 0), // 0
+            new Vector2(0, 1), // 1
+            new Vector2(1, 1), // 2
+            new Vector2(1, 0), // 3
+
+            // Right
+            new Vector2(0, 0), // 0
+            new Vector2(0, 1), // 1
+            new Vector2(1, 1), // 2
+            new Vector2(1, 0), // 3
+
+            // Top
+            new Vector2(0, 0), // 0
+            new Vector2(0, 1), // 1
+            new Vector2(1, 1), // 2
+            new Vector2(1, 0), // 3
+
+            // Bottom
+            new Vector2(0, 0), // 0
+            new Vector2(0, 1), // 1
+            new Vector2(1, 1), // 2
+            new Vector2(1, 0), // 3
+        };
+        List<int> triangles = new List<int>()
         {
-            Debug.Log("triangles " + i + ": " + triangles[i]);
-        }
+            // Front
+            0, 1, 2,
+            0, 2, 3,
 
+            // Back
+            4, 5, 6,
+            4, 6, 7,
 
-        // List<Vector3> normals = new List<Vector3>();
-        // mesh.GetNormals(normals);
+            // Left
+            8, 9, 10,
+            8, 10, 11,
 
+            // Right
+            12, 13, 14,
+            12, 14, 15,
+
+            // Top
+            16, 17, 18,
+            16, 18, 19,
+
+            // Bottom
+            20, 21, 22,
+            20, 22, 23,
+        };
 
         mesh.SetVertices(vertices);
         mesh.SetTriangles(triangles, 0);
         mesh.SetUVs(0, uvs);
-        // mesh.SetNormals(normals);
-
+        
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
         mesh.RecalculateTangents();

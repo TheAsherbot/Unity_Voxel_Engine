@@ -22,7 +22,6 @@ namespace TheAshBot.Meshes
 
             Vector3[] vertices = new Vector3[5];
             int[] triangles = new int[18];
-            Vector2[] uv = new Vector2[5];
 
             // This is the Start Vertex
             vertices[0] = new Vector3(0, 0, 0);
@@ -35,16 +34,14 @@ namespace TheAshBot.Meshes
             // This is the Bottom Left Vertex
             vertices[4] = new Vector3( meshWidth / 2, -meshHeight / 2, meshDepth);
 
-            uv = MeshHelper.AssineUvsFromVertices(vertices);
-
             MeshHelper.MakeTriangle(ref triangles, 0, 0, 1, 0); // Top
-            MeshHelper.MakeTriangle(ref triangles, 3, 3, 3, 0); // Bottum
+            MeshHelper.MakeTriangle(ref triangles, 3, 3, 3, 0); // Bottom
             MeshHelper.MakeTriangle(ref triangles, 6, 6, 1, 4); // Left
             MeshHelper.MakeTriangle(ref triangles, 9, 9, 2, 0); // Right
             MeshHelper.MakeTriangle(ref triangles, 12, 12, 4, 1); // Back Left
             MeshHelper.MakeTriangle(ref triangles, 15, 15, 4, 2); // Back Right
 
-            mesh = MeshHelper.AssineVerticesUvAndTrianglesToMesh(vertices, uv, triangles);
+            mesh = MeshHelper.AssignVerticesUvAndTrianglesToMesh(vertices, new Vector2[5], triangles);
 
             return mesh;
         }
@@ -53,7 +50,7 @@ namespace TheAshBot.Meshes
         #region Make Primitives
         
         /// <summary>
-        /// This makes a triangel mesh
+        /// This makes a triangle mesh
         /// </summary>
         public static Mesh MakeEquilateralTriangleMesh()
         {
@@ -73,7 +70,7 @@ namespace TheAshBot.Meshes
             // Note: if you have the triangle in a counter clockwise order than it will be backwards
             MeshHelper.MakeTriangle(ref triangles, 0, 0, 1, 2);
 
-            mesh = MeshHelper.AssineVerticesUvAndTrianglesToMesh(vertices, uv, triangles);
+            mesh = MeshHelper.AssignVerticesUvAndTrianglesToMesh(vertices, uv, triangles);
 
             return mesh;
         }
@@ -102,75 +99,128 @@ namespace TheAshBot.Meshes
 
             MeshHelper.MakeTriangle(ref triangles, 3, 3, 2, 3);
 
-            mesh = MeshHelper.AssineVerticesUvAndTrianglesToMesh(vertices, uv, triangles);
+            mesh = MeshHelper.AssignVerticesUvAndTrianglesToMesh(vertices, uv, triangles);
 
             return mesh;
         }
 
         /// <summary>
-        /// This is the random meshes i am makeing
+        /// Makes a cube mesh with a 24 vertices
         /// </summary>
         public static Mesh MakeCubeMesh()
         {
-            Mesh mesh;
+            Mesh mesh = new Mesh();
 
-            Vector3[] vertices = new Vector3[8];
-            Vector2[] uv = new Vector2[vertices.Length];
-            int[] triangles = new int[36];
+            List<Vector3> vertices = new List<Vector3>()
+            {
+                // Front 0
+                new Vector3(1, 0, 1), // 0
+                new Vector3(1, 1, 1), // 1
+                new Vector3(0, 1, 1), // 2
+                new Vector3(0, 0, 1), // 3
 
-            #region Make Vertices
-            vertices[0] = new Vector3(0, 0, 0) - (Vector3.one / 2);
-            vertices[1] = new Vector3(0, 1, 0) - (Vector3.one / 2);
-            vertices[2] = new Vector3(1, 1, 0) - (Vector3.one / 2);
-            vertices[3] = new Vector3(1, 0, 0) - (Vector3.one / 2);
-            vertices[4] = new Vector3(0, 0, 1) - (Vector3.one / 2);
-            vertices[5] = new Vector3(0, 1, 1) - (Vector3.one / 2);
-            vertices[6] = new Vector3(1, 1, 1) - (Vector3.one / 2);
-            vertices[7] = new Vector3(1, 0, 1) - (Vector3.one / 2);
-            #endregion
+                // Back 4
+                new Vector3(0, 0, 0), // 0
+                new Vector3(0, 1, 0), // 1
+                new Vector3(1, 1, 0), // 2
+                new Vector3(1, 0, 0), // 3
 
-            MeshHelper.AssignUvsFromVertices(vertices, new Vector3(0.5f, 0.5f, 0.5f));
+                // Left 8
+                new Vector3(1, 0, 0), // 0
+                new Vector3(1, 1, 0), // 1
+                new Vector3(1, 1, 1), // 2
+                new Vector3(1, 0, 1), // 3
 
-            #region Make Triangles
-            // Note: if you have the triangle in a counter clockwise order than it will be backwards
-            // Front Left
-            MeshHelper.MakeTriangle(ref triangles, 0, 0, 1, 2);
+                // Right 12
+                new Vector3(0, 0, 1), // 0
+                new Vector3(0, 1, 1), // 1
+                new Vector3(0, 1, 0), // 2
+                new Vector3(0, 0, 0), // 3
 
-            // Front Right
-            MeshHelper.MakeTriangle(ref triangles, 3, 3, 2, 3);
+                // Top 16
+                new Vector3(0, 1, 0), // 0
+                new Vector3(0, 1, 1), // 1
+                new Vector3(1, 1, 1), // 2
+                new Vector3(1, 1, 0), // 3
 
-            // Top Left
-            MeshHelper.MakeTriangle(ref triangles, 6, 6, 5, 6);
+                // Bottom 20
+                new Vector3(0, 0, 1), // 0
+                new Vector3(0, 0, 0), // 1
+                new Vector3(1, 0, 0), // 2
+                new Vector3(1, 0, 1), // 3
+            };
+            List<Vector2> uvs = new List<Vector2>()
+            {
+                // Front
+                new Vector2(0, 0), // 0
+                new Vector2(0, 1), // 1
+                new Vector2(1, 1), // 2
+                new Vector2(1, 0), // 3
 
-            // Top Right
-            MeshHelper.MakeTriangle(ref triangles, 9, 9, 6, 2);
+                // Back
+                new Vector2(0, 0), // 0
+                new Vector2(0, 1), // 1
+                new Vector2(1, 1), // 2
+                new Vector2(1, 0), // 3
 
-            // Left Front
-            MeshHelper.MakeTriangle(ref triangles, 12, 12, 1, 0);
+                // Left
+                new Vector2(0, 0), // 0
+                new Vector2(0, 1), // 1
+                new Vector2(1, 1), // 2
+                new Vector2(1, 0), // 3
 
-            // Left Back
-            MeshHelper.MakeTriangle(ref triangles, 15, 15, 5, 0);
+                // Right
+                new Vector2(0, 0), // 0
+                new Vector2(0, 1), // 1
+                new Vector2(1, 1), // 2
+                new Vector2(1, 0), // 3
 
-            // Right Front
-            MeshHelper.MakeTriangle(ref triangles, 18, 18, 6, 3);
+                // Top
+                new Vector2(0, 0), // 0
+                new Vector2(0, 1), // 1
+                new Vector2(1, 1), // 2
+                new Vector2(1, 0), // 3
 
-            // Right Back
-            MeshHelper.MakeTriangle(ref triangles, 21, 21, 7, 3);
+                // Bottom
+                new Vector2(0, 0), // 0
+                new Vector2(0, 1), // 1
+                new Vector2(1, 1), // 2
+                new Vector2(1, 0), // 3
+            };
+            List<int> triangles = new List<int>()
+            {
+                // Front
+                0, 1, 2,
+                0, 2, 3,
 
-            // Back Left
-            MeshHelper.MakeTriangle(ref triangles, 24, 24, 4, 7);
+                // Back
+                4, 5, 6,
+                4, 6, 7,
 
-            // Back Right
-            MeshHelper.MakeTriangle(ref triangles, 27, 27, 5, 7);
+                // Left
+                8, 9, 10,
+                8, 10, 11,
 
-            // Bottom Left
-            MeshHelper.MakeTriangle(ref triangles, 30, 30, 3, 4);
+                // Right
+                12, 13, 14,
+                12, 14, 15,
 
-            // Bottom Right
-            MeshHelper.MakeTriangle(ref triangles, 33, 33, 4, 3);
-            #endregion
+                // Top
+                16, 17, 18,
+                16, 18, 19,
 
-            mesh = MeshHelper.AssineVerticesUvAndTrianglesToMesh(vertices, uv, triangles);
+                // Bottom
+                20, 21, 22,
+                20, 22, 23,
+            };
+
+            mesh.SetVertices(vertices);
+            mesh.SetTriangles(triangles, 0);
+            mesh.SetUVs(0, uvs);
+
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            mesh.RecalculateTangents();
 
             return mesh;
         }

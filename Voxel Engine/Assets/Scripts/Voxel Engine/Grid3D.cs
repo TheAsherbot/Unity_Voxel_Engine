@@ -7,7 +7,7 @@ public class Grid3D
 
 
     /// <summary>
-    /// This holds all the functions that are called when the grid changes
+    /// This holds all the functions that are called when the grid changes <code>grid.OnGridValueChanged += Grid_OnValueChanged;</code><code>private void Grid_OnValueChanged(int x, int y, int z)</code>
     /// </summary>
     public OnGridValueChangedEventArgs OnGridValueChanged;
     public delegate void OnGridValueChangedEventArgs(int x, int y, int z);
@@ -30,7 +30,7 @@ public class Grid3D
     /// <param name="originPosition">This is the position of the bottom left grid object(AKA the origin</param>
     /// <param name="showDebug">If this is true the it will show the lines of the grid</param>
     /// <param name="parent">This si the parent object of the text(This is only needed if show debug is true)</param>
-    public Grid3D(int width, int height, int depth, float cellSize, Vector2 originPosition, bool showDebug, Transform parent)
+    public Grid3D(int width, int height, int depth, float cellSize, Vector3 originPosition, bool showDebug, Transform parent)
     {
         this.width = width;
         this.height = height;
@@ -76,7 +76,7 @@ public class Grid3D
     /// <param name="height">THis is the height of the grid</param>
     /// <param name="cellSize">This is how big the grid objects are</param>
     /// <param name="originPosition">This is the position of the bottom left grid object(AKA the origin</param>
-    public Grid3D(int width, int height, int depth, float cellSize, Vector2 originPosition)
+    public Grid3D(int width, int height, int depth, float cellSize, Vector3 originPosition)
     {
         this.width = width;
         this.height = height;
@@ -160,7 +160,7 @@ public class Grid3D
     /// </summary>
     /// <param name="worldPosition">This is the world position of the grid object</param>
     /// <returns>true if the grid cell has a value, else false</returns>
-    public virtual bool HasValue(Vector2 worldPosition)
+    public virtual bool HasValue(Vector3 worldPosition)
     {
         return false;
     }

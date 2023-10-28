@@ -1,7 +1,7 @@
 public class VoxelNode
 {
 
-    public VoxelNode(VoxelGrid<VoxelNode> grid, int x, int y, int z)
+    public VoxelNode(GenericGrid3D<VoxelNode> grid, int x, int y, int z)
     {
         type = new BitArray(2);
         type.SetBit(0, 1);

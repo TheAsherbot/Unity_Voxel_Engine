@@ -35,7 +35,7 @@ namespace TheAshBot.UI
         [SerializeField] private TMP_Dropdown resolutionDropdown;
         [SerializeField] private Toggle fullScreenToggle;
 
-        private int currentRefressRate;
+        private double currentRefreshRate;
         private List<Resolution> resolutionList;
         private List<Resolution> filteredResolutionList;
 
@@ -161,12 +161,12 @@ namespace TheAshBot.UI
             resolutionList = Screen.resolutions.ToList();
             filteredResolutionList = new List<Resolution>();
 
-            currentRefressRate = Screen.currentResolution.refreshRate;
+            currentRefreshRate = Screen.currentResolution.refreshRateRatio.value;
             resolutionDropdown.ClearOptions();
 
             for (int i = 0; i < resolutionList.Count; i++)
             {
-                if (resolutionList[i].refreshRate == currentRefressRate)
+                if (resolutionList[i].refreshRateRatio.value == currentRefreshRate)
                 {
                     filteredResolutionList.Add(resolutionList[i]);
                 }
