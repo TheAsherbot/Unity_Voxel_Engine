@@ -35,6 +35,12 @@ public class VoxelRenderer
             {
                 for (int z = 0; z < grid.GetDepth(); z++)
                 {
+                    if (GetVoxelType(x + 1, y, z) == 1 && GetVoxelType(x - 1, y, z) == 1 &&
+                        GetVoxelType(x, y + 1, z) == 1 && GetVoxelType(x, y - 1, z) == 1 &&
+                        GetVoxelType(x, y, z + 1) == 1 && GetVoxelType(x, y, z - 1) == 1)
+                    {
+                        continue;
+                    }
                     Debug.Log($"{x}, {y}, {z}");
                     AddCube(ref mesh, grid.GetWorldPosition(x, y, z));
                 }
@@ -58,7 +64,7 @@ public class VoxelRenderer
         List<Vector3> vertices = new List<Vector3>();
         List<Vector2> uvs = new List<Vector2>();
         List<int> triangles = new List<int>();
-        
+
         mesh.GetVertices(vertices);
         mesh.GetUVs(0, uvs);
         mesh.GetTriangles(triangles, 0);
@@ -177,6 +183,18 @@ public class VoxelRenderer
         mesh.RecalculateTangents();
     }
 
+    private byte GetVoxelType(int x, int y, int z)
+    {
+        if (x >= 0 && x < grid.GetWidth() &&
+            y >= 0 && y < grid.GetHeight() &&
+            z >= 0 && z < grid.GetDepth())
+        {
+            return grid.GetGridObject(x, y, z).type.GetValue_Byte();
+        }
+
+        Debug.Log("Out of bounds");
+        return 0;
+    }
 
 
 }
