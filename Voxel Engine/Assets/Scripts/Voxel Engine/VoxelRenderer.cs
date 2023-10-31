@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 
+using Unity.VisualScripting;
+
 using UnityEngine;
 
 public class VoxelRenderer
@@ -8,14 +10,14 @@ public class VoxelRenderer
     private GenericGrid3D<VoxelNode> grid;
     private MeshFilter meshFilter;
 
-    public VoxelRenderer(Material material)
+    public VoxelRenderer(Material material, Vector3 origin)
     {
         GameObject gameObject = new GameObject("Voxel Grid Mesh");
         meshFilter = gameObject.AddComponent<MeshFilter>();
         gameObject.AddComponent<MeshRenderer>().material = material;
 
         int size = 16;
-        grid = new GenericGrid3D<VoxelNode>(size, size, size, 1, new Vector3(-size / 2, -size / 2, -size / 2), (GenericGrid3D<VoxelNode> grid, int x, int y, int z) => new VoxelNode(grid, x, y, z));
+        grid = new GenericGrid3D<VoxelNode>(size, size, size, 1, origin + new Vector3(-size / 2, -size / 2, -size / 2), (GenericGrid3D<VoxelNode> grid, int x, int y, int z) => new VoxelNode(grid, x, y, z));
         grid.OnGridValueChanged += Grid_OnValueChanged;
     }
 
@@ -35,14 +37,40 @@ public class VoxelRenderer
             {
                 for (int z = 0; z < grid.GetDepth(); z++)
                 {
-                    if (GetVoxelType(x + 1, y, z) == 1 && GetVoxelType(x - 1, y, z) == 1 &&
-                        GetVoxelType(x, y + 1, z) == 1 && GetVoxelType(x, y - 1, z) == 1 &&
-                        GetVoxelType(x, y, z + 1) == 1 && GetVoxelType(x, y, z - 1) == 1)
+                    BitArray neighbors = new BitArray(6);
+                    // Front
+                    if (GetVoxelType(x, y, z + 1) == 1)
                     {
-                        continue;
+                        neighbors.SetBit(0, 1);
                     }
-                    Debug.Log($"{x}, {y}, {z}");
-                    AddCube(ref mesh, grid.GetWorldPosition(x, y, z));
+                    // Back
+                    if (GetVoxelType(x, y, z - 1) == 1)
+                    {
+                        neighbors.SetBit(1, 1);
+                    }
+                    // Left
+                    if (GetVoxelType(x - 1, y, z) == 1)
+                    {
+                        neighbors.SetBit(2, 1);
+                    }
+                    // Right
+                    if (GetVoxelType(x + 1, y, z) == 1)
+                    {
+                        neighbors.SetBit(3, 1);
+                    }
+                    // Top
+                    if (GetVoxelType(x, y + 1, z) == 1)
+                    {
+                        neighbors.SetBit(4, 1);
+                    }
+                    // Bottom
+                    if (GetVoxelType(x, y - 1, z) == 1)
+                    {
+                        neighbors.SetBit(5, 1);
+                    }
+
+
+                    AddCube(ref mesh, grid.GetWorldPosition(x, y, z), neighbors);
                 }
             }
         }
@@ -57,8 +85,20 @@ public class VoxelRenderer
         RenderVoxels();
     }
 
-    private void AddCube(ref Mesh mesh, Vector3 origin)
+
+    /// <summary>
+    /// This will add values for a cube onto a mesh.
+    /// </summary>
+    /// <param name="mesh">is the mash that the cube is being added to</param>
+    /// <param name="origin">Is the bottom left back corner of the cube relative to the position of the GamObject with the mesh renderer.</param>
+    /// <param name="neighbors">Needs 6 bits. 0 = Render Face. 1 = Do not render facer. index: 0 = Front, 1 = Back, 2 = Left, 4 = Right, 5 = Top, 6 = Bottom</param>
+    private void AddCube(ref Mesh mesh, Vector3 origin, BitArray neighbors)
     {
+        if (neighbors.GetValue_Byte() >= 63)
+        {
+            return;
+        }
+
         float cellSize = grid.GetCellSize();
 
         List<Vector3> vertices = new List<Vector3>();
@@ -71,116 +111,119 @@ public class VoxelRenderer
 
         int startVertexIndex = vertices.Count;
 
-        vertices.AddRange(new List<Vector3>
+        // Front
+        if (neighbors.GetBit(0) == 0)
         {
-            // Front 0
-            origin + new Vector3(cellSize, 0, cellSize), // 0
-            origin + new Vector3(cellSize, cellSize, cellSize), // 1
-            origin + new Vector3(0, cellSize, cellSize), // 2
-            origin + new Vector3(0, 0, cellSize), // 3
-                                
-            // Back 4           
-            origin + new Vector3(0, 0, 0), // 0
-            origin + new Vector3(0, cellSize, 0), // 1
-            origin + new Vector3(cellSize, cellSize, 0), // 2
-            origin + new Vector3(cellSize, 0, 0), // 3
-                                
-            // Left 8           
-            origin + new Vector3(cellSize, 0, 0), // 0
-            origin + new Vector3(cellSize, cellSize, 0), // 1
-            origin + new Vector3(cellSize, cellSize, cellSize), // 2
-            origin + new Vector3(cellSize, 0, cellSize), // 3
-                                
-            // Right 12         
-            origin + new Vector3(0, 0, cellSize), // 0
-            origin + new Vector3(0, cellSize, cellSize), // 1
-            origin + new Vector3(0, cellSize, 0), // 2
-            origin + new Vector3(0, 0, 0), // 3
-                                
-            // Top 16           
-            origin + new Vector3(0, cellSize, 0), // 0
-            origin + new Vector3(0, cellSize, cellSize), // 1
-            origin + new Vector3(cellSize, cellSize, cellSize), // 2
-            origin + new Vector3(cellSize, cellSize, 0), // 3
-                                
-            // Bottom 20        
-            origin + new Vector3(0, 0, cellSize), // 0
-            origin + new Vector3(0, 0, 0), // 1
-            origin + new Vector3(cellSize, 0, 0), // 2
-            origin + new Vector3(cellSize, 0, cellSize), // 3
-        });
-        uvs.AddRange(new List<Vector2>
+            vertices.AddRange(new List<Vector3>
+            {
+                origin + new Vector3(cellSize, 0, cellSize), // 0
+                origin + new Vector3(cellSize, cellSize, cellSize), // 1
+                origin + new Vector3(0, cellSize, cellSize), // 2
+                origin + new Vector3(0, 0, cellSize), // 3
+            });
+            AddUV(ref uvs);
+            AddTriangles(ref triangles, startVertexIndex);
+            startVertexIndex += 4;
+        }
+        // Back
+        if (neighbors.GetBit(1) == 0)
         {
-            // Front
-            new Vector2(0, 0), // 0
-            new Vector2(0, 1), // 1
-            new Vector2(1, 1), // 2
-            new Vector2(1, 0), // 3
-
-            // Back
-            new Vector2(0, 0), // 0
-            new Vector2(0, 1), // 1
-            new Vector2(1, 1), // 2
-            new Vector2(1, 0), // 3
-
-            // Left
-            new Vector2(0, 0), // 0
-            new Vector2(0, 1), // 1
-            new Vector2(1, 1), // 2
-            new Vector2(1, 0), // 3
-
-            // Right
-            new Vector2(0, 0), // 0
-            new Vector2(0, 1), // 1
-            new Vector2(1, 1), // 2
-            new Vector2(1, 0), // 3
-
-            // Top
-            new Vector2(0, 0), // 0
-            new Vector2(0, 1), // 1
-            new Vector2(1, 1), // 2
-            new Vector2(1, 0), // 3
-
-            // Bottom
-            new Vector2(0, 0), // 0
-            new Vector2(0, 1), // 1
-            new Vector2(1, 1), // 2
-            new Vector2(1, 0), // 3
-        });
-        triangles.AddRange(new List<int>
+            vertices.AddRange(new List<Vector3>
+            {
+                origin + new Vector3(0, 0, 0), // 0
+                origin + new Vector3(0, cellSize, 0), // 1
+                origin + new Vector3(cellSize, cellSize, 0), // 2
+                origin + new Vector3(cellSize, 0, 0), // 3
+            });
+            AddUV(ref uvs);
+            AddTriangles(ref triangles, startVertexIndex);
+            startVertexIndex += 4;
+        }
+        // Left
+        if (neighbors.GetBit(2) == 0)
         {
-            // Front
-            startVertexIndex, startVertexIndex + 1, startVertexIndex + 2,
-            startVertexIndex, startVertexIndex + 2, startVertexIndex + 3,
-
-            // Back
-            startVertexIndex + 4, startVertexIndex + 5, startVertexIndex + 6,
-            startVertexIndex + 4, startVertexIndex + 6, startVertexIndex + 7,
-
-            // Left
-            startVertexIndex + 8, startVertexIndex + 9, startVertexIndex + 10,
-            startVertexIndex + 8, startVertexIndex + 10,startVertexIndex +  11,
-
-            // Right
-            startVertexIndex + 12, startVertexIndex + 13, startVertexIndex + 14,
-            startVertexIndex + 12, startVertexIndex + 14, startVertexIndex + 15,
-
-            // Top
-            startVertexIndex + 16, startVertexIndex + 17, startVertexIndex + 18,
-            startVertexIndex + 16, startVertexIndex + 18, startVertexIndex + 19,
-
-            // Bottom
-            startVertexIndex + 20, startVertexIndex + 21, startVertexIndex + 22,
-            startVertexIndex + 20, startVertexIndex + 22, startVertexIndex + 23,
-        });
+            vertices.AddRange(new List<Vector3>
+            {
+                origin + new Vector3(0, 0, cellSize), // 0
+                origin + new Vector3(0, cellSize, cellSize), // 1
+                origin + new Vector3(0, cellSize, 0), // 2
+                origin + new Vector3(0, 0, 0), // 3
+            });
+            AddUV(ref uvs);
+            AddTriangles(ref triangles, startVertexIndex);
+            startVertexIndex += 4;
+        }
+        // Right
+        if (neighbors.GetBit(3) == 0)
+        {
+            vertices.AddRange(new List<Vector3>
+            {
+                origin + new Vector3(cellSize, 0, 0), // 0
+                origin + new Vector3(cellSize, cellSize, 0), // 1
+                origin + new Vector3(cellSize, cellSize, cellSize), // 2
+                origin + new Vector3(cellSize, 0, cellSize), // 3
+            });
+            AddUV(ref uvs);
+            AddTriangles(ref triangles, startVertexIndex);
+            startVertexIndex += 4;
+        }
+        // Top
+        if (neighbors.GetBit(4) == 0)
+        {
+            vertices.AddRange(new List<Vector3>
+            {
+                origin + new Vector3(0, cellSize, 0), // 0
+                origin + new Vector3(0, cellSize, cellSize), // 1
+                origin + new Vector3(cellSize, cellSize, cellSize), // 2
+                origin + new Vector3(cellSize, cellSize, 0), // 3
+            });
+            AddUV(ref uvs);
+            AddTriangles(ref triangles, startVertexIndex);
+            startVertexIndex += 4;
+        }
+        // Bottom
+        if (neighbors.GetBit(5) == 0)
+        {
+            vertices.AddRange(new List<Vector3>
+            {
+                origin + new Vector3(0, 0, cellSize), // 0
+                origin + new Vector3(0, 0, 0), // 1
+                origin + new Vector3(cellSize, 0, 0), // 2
+                origin + new Vector3(cellSize, 0, cellSize), // 3
+            });
+            AddUV(ref uvs);
+            AddTriangles(ref triangles, startVertexIndex);
+            startVertexIndex += 4;
+        }
 
         mesh.SetVertices(vertices);
-        mesh.SetTriangles(triangles, 0);
         mesh.SetUVs(0, uvs);
+        mesh.SetTriangles(triangles, 0);
 
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
         mesh.RecalculateTangents();
+    }
+
+
+    private void AddUV(ref List<Vector2> uvs)
+    {
+        uvs.AddRange(new List<Vector2>
+        {
+            new Vector2(0, 0), // 0
+            new Vector2(0, 1), // 1
+            new Vector2(1, 1), // 2
+            new Vector2(1, 0), // 3
+        });
+    }
+
+    private void AddTriangles(ref List<int> triangles, int startVertexIndex)
+    {
+        triangles.AddRange(new List<int>
+        {
+            startVertexIndex, startVertexIndex + 1, startVertexIndex + 2,
+            startVertexIndex, startVertexIndex + 2, startVertexIndex + 3,
+        });
     }
 
     private byte GetVoxelType(int x, int y, int z)
@@ -192,7 +235,6 @@ public class VoxelRenderer
             return grid.GetGridObject(x, y, z).type.GetValue_Byte();
         }
 
-        Debug.Log("Out of bounds");
         return 0;
     }
 

@@ -12,7 +12,7 @@ public struct BitArray
     }
 
 
-    public Bit[] bitArray;
+    private Bit[] bitArray;
 
 
     public string GetBinaryValue_String()
@@ -69,6 +69,11 @@ public struct BitArray
     public void SetBit(byte index, Bit bit)
     {
         bitArray[index] = bit;
+    }
+    
+    public Bit GetBit(byte index)
+    {
+        return bitArray[index];
     }
 
 

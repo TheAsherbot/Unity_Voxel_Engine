@@ -1,0 +1,9 @@
+Using UV's
+36.4 seconds
+36.4 seconds
+38 seconds
+
+without using UV's
+17.2 seconds
+18.3 seconds
+17.1 seconds

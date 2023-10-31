@@ -11,23 +11,29 @@ public class Test : MonoBehaviour
 
     private void Start()
     {
-        VoxelRenderer voxelRenderer = new VoxelRenderer(material);
-        grid = voxelRenderer.GetGrid();
-
-        for (int x = 0; x < grid.GetWidth(); x++)
+        for (int rendererX = 0; rendererX < 16; rendererX++)
         {
-            for (int y = 0; y < grid.GetHeight(); y++)
+            for (int rendererY = 0; rendererY < 16; rendererY++)
             {
-                for (int z = 0; z < grid.GetDepth(); z++)
+                VoxelRenderer voxelRenderer = new VoxelRenderer(material, new Vector3(rendererX, rendererY) * 16);
+                grid = voxelRenderer.GetGrid();
+
+                for (int x = 0; x < grid.GetWidth(); x++)
                 {
-                    VoxelNode voxelNode = grid.GetGridObject(x, y, z);
-                    voxelNode.type.SetBit(0, 1);
-                    grid.SetGridObjectWithoutNotifying(x, y, z, voxelNode);
+                    for (int y = 0; y < grid.GetHeight(); y++)
+                    {
+                        for (int z = 0; z < grid.GetDepth(); z++)
+                        {
+                            VoxelNode voxelNode = grid.GetGridObject(x, y, z);
+                            voxelNode.type.SetBit(0, 1);
+                            grid.SetGridObjectWithoutNotifying(x, y, z, voxelNode);
+                        }
+                    }
                 }
+
+                grid.TriggerGridObjectChanged(0, 0, 0);
             }
         }
-
-        grid.TriggerGridObjectChanged(0, 0, 0);
     }
 
 /*
