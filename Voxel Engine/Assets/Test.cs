@@ -11,29 +11,31 @@ public class Test : MonoBehaviour
 
     private void Start()
     {
-        for (int rendererX = 0; rendererX < 16; rendererX++)
+        VoxelRenderer voxelRenderer = new VoxelRenderer(new Vector3(0, 0));
+        grid = voxelRenderer.GetGrid();
+
+        for (int x = 0; x < grid.GetWidth(); x++)
         {
-            for (int rendererY = 0; rendererY < 16; rendererY++)
+            for (int y = 0; y < grid.GetHeight(); y++)
             {
-                VoxelRenderer voxelRenderer = new VoxelRenderer(material, new Vector3(rendererX, rendererY) * 16);
-                grid = voxelRenderer.GetGrid();
-
-                for (int x = 0; x < grid.GetWidth(); x++)
+                for (int z = 0; z < grid.GetDepth(); z++)
                 {
-                    for (int y = 0; y < grid.GetHeight(); y++)
+                    VoxelNode voxelNode = grid.GetGridObject(x, y, z);
+                    if (x % 2 == 0 && y % 2 == 0 && z % 2 == 0)
                     {
-                        for (int z = 0; z < grid.GetDepth(); z++)
-                        {
-                            VoxelNode voxelNode = grid.GetGridObject(x, y, z);
-                            voxelNode.type.SetBit(0, 1);
-                            grid.SetGridObjectWithoutNotifying(x, y, z, voxelNode);
-                        }
+                        voxelNode.type.SetBit(0, 1);
+                        voxelNode.color = Color.HSVToRGB(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f));
                     }
+                    else
+                    {
+                        voxelNode.type.SetBit(0, 0);
+                    }
+                    grid.SetGridObjectWithoutNotifying(x, y, z, voxelNode);
                 }
-
-                grid.TriggerGridObjectChanged(0, 0, 0);
             }
         }
+
+        grid.TriggerGridObjectChanged(0, 0, 0);
     }
 
 /*

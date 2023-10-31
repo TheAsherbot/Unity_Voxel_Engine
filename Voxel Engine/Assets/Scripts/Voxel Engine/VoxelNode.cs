@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public class VoxelNode
 {
 
@@ -17,6 +19,7 @@ public class VoxelNode
     public float x; 
     public float y; 
     public float z;
+    public Color32 color;
 
 
     public override string ToString()
