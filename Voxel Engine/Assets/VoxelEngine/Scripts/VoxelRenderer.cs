@@ -57,39 +57,40 @@ namespace TheAshBot.VoxelEngine
                 {
                     for (int z = 0; z < grid.GetDepth(); z++)
                     {
-                        if (GetVoxelType(x, y, z) == 0)
+                        if (IsEmpty(x, y, z) == true)
                         {
                             // Empty
                             continue;
                         }
+
                         BitArray neighbors = new BitArray(6);
                         // Front
-                        if (GetVoxelType(x, y, z + 1) == 1)
+                        if (IsEmpty(x, y, z + 1) == false)
                         {
                             neighbors.SetBit(0, 1);
                         }
                         // Back
-                        if (GetVoxelType(x, y, z - 1) == 1)
+                        if (IsEmpty(x, y, z - 1) == false)
                         {
                             neighbors.SetBit(1, 1);
                         }
                         // Left
-                        if (GetVoxelType(x - 1, y, z) == 1)
+                        if (IsEmpty(x - 1, y, z) == false)
                         {
                             neighbors.SetBit(2, 1);
                         }
                         // Right
-                        if (GetVoxelType(x + 1, y, z) == 1)
+                        if (IsEmpty(x + 1, y, z) == false)
                         {
                             neighbors.SetBit(3, 1);
                         }
                         // Top
-                        if (GetVoxelType(x, y + 1, z) == 1)
+                        if (IsEmpty(x, y + 1, z) == false)
                         {
                             neighbors.SetBit(4, 1);
                         }
                         // Bottom
-                        if (GetVoxelType(x, y - 1, z) == 1)
+                        if (IsEmpty(x, y - 1, z) == false)
                         {
                             neighbors.SetBit(5, 1);
                         }
@@ -283,16 +284,16 @@ namespace TheAshBot.VoxelEngine
         });
         }
 
-        private byte GetVoxelType(int x, int y, int z)
+        private bool IsEmpty(int x, int y, int z)
         {
             if (x >= 0 && x < grid.GetWidth() &&
                 y >= 0 && y < grid.GetHeight() &&
                 z >= 0 && z < grid.GetDepth())
             {
-                return grid.GetGridObject(x, y, z).type.GetValue_Byte();
+                return grid.GetGridObject(x, y, z).isEmpty;
             }
 
-            return 0;
+            return true;
         }
 
         private Texture2D GetTexture()

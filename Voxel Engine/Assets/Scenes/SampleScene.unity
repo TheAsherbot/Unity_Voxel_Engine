@@ -212,7 +212,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   parent: {fileID: 64393927}
-  material: {fileID: 2100000, guid: 0dfc7abc07748eb49ae28ab60ee0cb1d, type: 2}
 --- !u!33 &64393930
 MeshFilter:
   m_ObjectHideFlags: 0

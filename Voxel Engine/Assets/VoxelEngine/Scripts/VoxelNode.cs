@@ -7,8 +7,7 @@ namespace TheAshBot.VoxelEngine
 
         public VoxelNode(GenericGrid3D<VoxelNode> grid, int x, int y, int z)
         {
-            type = new BitArray(2);
-            type.SetBit(0, 1);
+            isEmpty = true;
             this.x = x;
             this.y = y;
             this.z = z;
@@ -17,7 +16,7 @@ namespace TheAshBot.VoxelEngine
         /// <summary>
         /// 0 = Empty, 1 = Filled, 2 = Almost Filled.
         /// </summary>
-        public BitArray type;
+        public bool isEmpty;
         public float x;
         public float y;
         public float z;
@@ -26,15 +25,7 @@ namespace TheAshBot.VoxelEngine
 
         public override string ToString()
         {
-            string value = "";
-            if (type.GetValue_Byte() == 1)
-            {
-                value = "Filled";
-            }
-            if (type.GetValue_Byte() == 2)
-            {
-                value = "Almost Filled";
-            }
+            string value = isEmpty ? "Empty" : "Filled";
             return value;
         }
 
