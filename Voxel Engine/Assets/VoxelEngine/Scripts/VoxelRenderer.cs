@@ -16,7 +16,8 @@ namespace TheAshBot.VoxelEngine
         }
 
 
-        private GenericGrid3D<VoxelNode> grid;
+        //private GenericGrid3D<VoxelNode> grid;
+        private VoxelChunk voxelChunk;
         private MeshFilter meshFilter;
         private MeshRenderer meshRenderer;
         private List<Color32> textureColorList;
@@ -31,9 +32,8 @@ namespace TheAshBot.VoxelEngine
             meshFilter = gameObject.AddComponent<MeshFilter>();
             meshRenderer = gameObject.AddComponent<MeshRenderer>();
 
-            int size = 16;
-            grid = new GenericGrid3D<VoxelNode>(size, size, size, 1, origin + new Vector3(-size / 2, -size / 2, -size / 2), (GenericGrid3D<VoxelNode> grid, int x, int y, int z) => new VoxelNode(grid, x, y, z));
-            grid.OnGridValueChanged += Grid_OnValueChanged;
+            voxelChunk = new VoxelChunk(1, Vector3.zero);
+            voxelChunk.GetGrid().OnGridValueChanged += Grid_OnValueChanged;
 
             textureColorList = new List<Color32>();
         }
@@ -44,18 +44,18 @@ namespace TheAshBot.VoxelEngine
 
         public GenericGrid3D<VoxelNode> GetGrid()
         {
-            return grid;
+            return voxelChunk.GetGrid();
         }
 
         public void RenderVoxels()
         {
             Mesh mesh = new Mesh();
             mesh.name = "Voxel Grid Mesh";
-            for (int x = 0; x < grid.GetWidth(); x++)
+            for (int x = 0; x < voxelChunk.GetGrid().GetWidth(); x++)
             {
-                for (int y = 0; y < grid.GetHeight(); y++)
+                for (int y = 0; y < voxelChunk.GetGrid().GetHeight(); y++)
                 {
-                    for (int z = 0; z < grid.GetDepth(); z++)
+                    for (int z = 0; z < voxelChunk.GetGrid().GetDepth(); z++)
                     {
                         if (IsEmpty(x, y, z) == true)
                         {
@@ -96,7 +96,7 @@ namespace TheAshBot.VoxelEngine
                         }
 
 
-                        AddCube(ref mesh, grid.GetWorldPosition(x, y, z), neighbors, grid.GetGridObject(x, y, z).color);
+                        AddCube(ref mesh, voxelChunk.GetGrid().GetWorldPosition(x, y, z), neighbors, voxelChunk.GetGrid().GetGridObject(x, y, z).color);
                     }
                 }
             }
@@ -110,6 +110,7 @@ namespace TheAshBot.VoxelEngine
             texture.filterMode = FilterMode.Point;
             texture.Apply();
             material.mainTexture = texture;
+            material.color = Color.white;
             meshRenderer.material = material;
             meshRenderer.SetMaterials(new List<Material> { material });
 
@@ -146,7 +147,7 @@ namespace TheAshBot.VoxelEngine
                 return;
             }
 
-            float cellSize = grid.GetCellSize();
+            float cellSize = voxelChunk.GetGrid().GetCellSize();
 
             List<Vector3> vertices = new List<Vector3>();
             List<Vector2> uvs = new List<Vector2>();
@@ -286,11 +287,11 @@ namespace TheAshBot.VoxelEngine
 
         private bool IsEmpty(int x, int y, int z)
         {
-            if (x >= 0 && x < grid.GetWidth() &&
-                y >= 0 && y < grid.GetHeight() &&
-                z >= 0 && z < grid.GetDepth())
+            if (x >= 0 && x < voxelChunk.GetGrid().GetWidth() &&
+                y >= 0 && y < voxelChunk.GetGrid().GetHeight() &&
+                z >= 0 && z < voxelChunk.GetGrid().GetDepth())
             {
-                return grid.GetGridObject(x, y, z).isEmpty;
+                return voxelChunk.GetGrid().GetGridObject(x, y, z).isEmpty;
             }
 
             return true;

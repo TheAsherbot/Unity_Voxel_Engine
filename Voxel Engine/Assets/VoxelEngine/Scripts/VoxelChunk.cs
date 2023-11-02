@@ -1,6 +1,3 @@
-using System.Drawing;
-using System.Runtime.CompilerServices;
-
 using UnityEngine;
 
 namespace TheAshBot.VoxelEngine
@@ -12,7 +9,14 @@ namespace TheAshBot.VoxelEngine
 
 
 
+
+        /// <summary>
+        /// 0 = empty, 1 = partially filled, 2 = filled.
+        /// </summary>
+        private BitArray chunkStatus;
+
         private GenericGrid3D<VoxelNode> grid;
+
 
 
 
@@ -20,11 +24,32 @@ namespace TheAshBot.VoxelEngine
         {
             grid = new GenericGrid3D<VoxelNode>(GRID_SIZE, GRID_SIZE, GRID_SIZE, cellSize, originPosition, 
                 (GenericGrid3D<VoxelNode> grid, int x, int y, int z) => new VoxelNode(grid, x, y, z));
+
+            chunkStatus = new BitArray(2);
         }
         public VoxelChunk(GenericGrid3D<VoxelChunk> chunkGrid, int x, int y, int z)
         {
             grid = new GenericGrid3D<VoxelNode>(GRID_SIZE, GRID_SIZE, GRID_SIZE, 1, new Vector3(x, y, z) * 16,
-            (GenericGrid3D<VoxelNode> grid, int x, int y, int z) => new VoxelNode(grid, x, y, z));
+                (GenericGrid3D<VoxelNode> grid, int x, int y, int z) => new VoxelNode(grid, x, y, z));
+
+            chunkStatus = new BitArray(2);
+        }
+
+
+
+
+
+        /// <summary>
+        /// Gets the chunk Status of the chunk. 0 = empty, 1 = partially filled, 2 = filled.
+        /// </summary>
+        /// <returns>A bit array with 2 bits</returns>
+        public BitArray GetChunkStatus()
+        {
+            return chunkStatus;
+        }
+        public GenericGrid3D<VoxelNode> GetGrid()
+        {
+            return grid;
         }
 
     }
