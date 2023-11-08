@@ -57,7 +57,7 @@ namespace TheAshBot.VoxelEngine
                 {
                     for (int z = 0; z < voxelChunk.GetGrid().GetDepth(); z++)
                     {
-                        if (IsEmpty(x, y, z) == true)
+                        if (IsFilled(x, y, z) == false)
                         {
                             // Empty
                             continue;
@@ -65,32 +65,32 @@ namespace TheAshBot.VoxelEngine
 
                         BitArray neighbors = new BitArray(6);
                         // Front
-                        if (IsEmpty(x, y, z + 1) == false)
+                        if (IsFilled(x, y, z + 1) == true)
                         {
                             neighbors.SetBit(0, 1);
                         }
                         // Back
-                        if (IsEmpty(x, y, z - 1) == false)
+                        if (IsFilled(x, y, z - 1) == true)
                         {
                             neighbors.SetBit(1, 1);
                         }
                         // Left
-                        if (IsEmpty(x - 1, y, z) == false)
+                        if (IsFilled(x - 1, y, z) == true)
                         {
                             neighbors.SetBit(2, 1);
                         }
                         // Right
-                        if (IsEmpty(x + 1, y, z) == false)
+                        if (IsFilled(x + 1, y, z) == true)
                         {
                             neighbors.SetBit(3, 1);
                         }
                         // Top
-                        if (IsEmpty(x, y + 1, z) == false)
+                        if (IsFilled(x, y + 1, z) == true)
                         {
                             neighbors.SetBit(4, 1);
                         }
                         // Bottom
-                        if (IsEmpty(x, y - 1, z) == false)
+                        if (IsFilled(x, y - 1, z) == true)
                         {
                             neighbors.SetBit(5, 1);
                         }
@@ -265,8 +265,8 @@ namespace TheAshBot.VoxelEngine
                 uvIndex = (byte)textureColorList.Count;
                 textureColorList.Add(color);
             }
+
             Vector2 origin = new Vector2(Mathf.Round(uvIndex / 16f), uvIndex % 16);
-            Debug.Log("origin: " + origin);
             uvs.AddRange(new List<Vector2>
         {
             origin / 16f    , // 0
@@ -285,16 +285,16 @@ namespace TheAshBot.VoxelEngine
         });
         }
 
-        private bool IsEmpty(int x, int y, int z)
+        private bool IsFilled(int x, int y, int z)
         {
             if (x >= 0 && x < voxelChunk.GetGrid().GetWidth() &&
                 y >= 0 && y < voxelChunk.GetGrid().GetHeight() &&
                 z >= 0 && z < voxelChunk.GetGrid().GetDepth())
             {
-                return voxelChunk.GetGrid().GetGridObject(x, y, z).isEmpty;
+                return voxelChunk.GetGrid().GetGridObject(x, y, z).isFilled;
             }
 
-            return true;
+            return false;
         }
 
         private Texture2D GetTexture()
@@ -315,7 +315,6 @@ namespace TheAshBot.VoxelEngine
 
         private Color GetTextureColorFromXY(byte x, byte y)
         {
-            Debug.Log(x * 16 + y);
             Color color = default;
             try
             {

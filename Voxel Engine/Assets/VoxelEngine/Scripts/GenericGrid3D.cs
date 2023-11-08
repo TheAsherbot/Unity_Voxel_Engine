@@ -20,7 +20,7 @@ namespace TheAshBot.VoxelEngine
         /// <param name="createGridObject">This is the the value that all the gid object will default to <code>(GenericGrid TGridObject grid, int x, int y, int z) => new TGridObject(grid, x, y, z)</code></param>
         /// <param name="showDebug">If this is true the it will show the lines of the grid</param>
         /// <param name="parent">This is the parent object of the text(This is only needed if show debug is true)</param>
-        public GenericGrid3D(int width, int height, int depth, float cellSize, Vector3 originPosition, Func<GenericGrid3D<TGridObject>, int, int, int, TGridObject> createGridObject, bool showDebug, Transform parent, int baseFontSize = 20)
+        public GenericGrid3D(int width, int height, int depth, float cellSize, Vector3 originPosition, Func<GenericGrid3D<TGridObject>, byte, byte, byte, TGridObject> createGridObject, bool showDebug, Transform parent, int baseFontSize = 20)
                     : base(width, height, depth, cellSize, originPosition, showDebug, parent)
         {
             this.width = width;
@@ -30,11 +30,11 @@ namespace TheAshBot.VoxelEngine
 
             gridArray = new TGridObject[width, height, depth];
 
-            for (int x = 0; x < gridArray.GetLength(0); x++)
+            for (byte x = 0; x < gridArray.GetLength(0); x++)
             {
-                for (int y = 0; y < gridArray.GetLength(1); y++)
+                for (byte y = 0; y < gridArray.GetLength(1); y++)
                 {
-                    for (int z = 0; z < gridArray.GetLength(2); z++)
+                    for (byte z = 0; z < gridArray.GetLength(2); z++)
                     {
                         gridArray[x, y, z] = createGridObject(this, x, y, z);
                     }
@@ -45,11 +45,11 @@ namespace TheAshBot.VoxelEngine
             {
                 TextMesh[,,] debugTextArray = new TextMesh[width, height, depth];
 
-                for (int x = 0; x < width; x++)
+                for (byte x = 0; x < width; x++)
                 {
-                    for (int y = 0; y < height; y++)
+                    for (byte y = 0; y < height; y++)
                     {
-                        for (int z = 0; z < depth; z++)
+                        for (byte z = 0; z < depth; z++)
                         {
                             string nodeToString = gridArray[x, y, z].ToString();
                             debugTextArray[x, y, z] = CreateWorldText(parent, nodeToString, GetWorldPosition(x, y, z) + new Vector3(cellSize, cellSize, cellSize) * .5f,
@@ -84,7 +84,7 @@ namespace TheAshBot.VoxelEngine
         /// <param name="cellSize">This is how big the grid objects are</param>
         /// <param name="originPosition">This is the position of the bottom left grid object(AKA the origin)</param>
         /// <param name="createGridObject">This is the the value that all the gid object will default to<code>(GenericGrid grid, int x, int y, int z) => new TGridObject(grid, x, y, z)</code></param>
-        public GenericGrid3D(int width, int height, int depth, float cellSize, Vector3 originPosition, Func<GenericGrid3D<TGridObject>, int, int, int, TGridObject> createGridObject)
+        public GenericGrid3D(int width, int height, int depth, float cellSize, Vector3 originPosition, Func<GenericGrid3D<TGridObject>, byte, byte, byte, TGridObject> createGridObject)
                     : base(width, height, depth, cellSize, originPosition)
         {
             this.width = width;
@@ -94,11 +94,11 @@ namespace TheAshBot.VoxelEngine
 
             gridArray = new TGridObject[width, height, depth];
 
-            for (int x = 0; x < gridArray.GetLength(0); x++)
+            for (byte x = 0; x < gridArray.GetLength(0); x++)
             {
-                for (int y = 0; y < gridArray.GetLength(1); y++)
+                for (byte y = 0; y < gridArray.GetLength(1); y++)
                 {
-                    for (int z = 0; z < gridArray.GetLength(2); z++)
+                    for (byte z = 0; z < gridArray.GetLength(2); z++)
                     {
                         gridArray[x, y, z] = createGridObject(this, x, y, z);
                     }
