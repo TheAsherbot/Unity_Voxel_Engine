@@ -10,12 +10,6 @@ namespace TheAshBot.VoxelEngine
         private static readonly float UV_PIXEL_OFFSET = 0.0625f;
 
 
-        private class TEST : MonoBehaviour
-        {
-            public Texture2D texture;
-        }
-
-
         //private GenericGrid3D<VoxelNode> grid;
         private VoxelChunk voxelChunk;
         private MeshFilter meshFilter;
@@ -102,8 +96,6 @@ namespace TheAshBot.VoxelEngine
             }
 
 
-            GameObject gameObject = new GameObject("", typeof(TEST));
-
 
             Material material = new Material(meshRenderer.material);
             Texture2D texture = GetTexture();
@@ -113,9 +105,6 @@ namespace TheAshBot.VoxelEngine
             material.color = Color.white;
             meshRenderer.material = material;
             meshRenderer.SetMaterials(new List<Material> { material });
-
-
-            gameObject.GetComponent<TEST>().texture = texture;
 
 
             mesh.RecalculateNormals();

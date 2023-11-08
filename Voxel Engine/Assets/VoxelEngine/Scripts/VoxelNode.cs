@@ -56,7 +56,7 @@ namespace TheAshBot.VoxelEngine
 
         public override string ToString()
         {
-            return (isFilled == false ? "Empty" : "Filled");
+            return (isFilled == false ? "" : "Filled");
         }
 
     }

@@ -5,7 +5,7 @@ namespace TheAshBot.VoxelEngine
     public class VoxelChunk
     {
 
-        private static readonly byte GRID_SIZE = 4;
+        private static readonly byte GRID_SIZE = 16;
 
 
 
