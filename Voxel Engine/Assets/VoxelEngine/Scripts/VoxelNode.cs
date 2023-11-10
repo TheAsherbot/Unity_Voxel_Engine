@@ -45,13 +45,6 @@ namespace TheAshBot.VoxelEngine
                 grid.GetGridObject(x + 1, y, z),
                 grid.GetGridObject(x - 1, y, z),
             };
-
-            Debug.Log(new Vector3(x, y + 1, z) + ": " + neighbors[0]);
-            Debug.Log(new Vector3(x, y - 1, z) + ": " + neighbors[1]);
-            Debug.Log(new Vector3(x, y, z + 1) + ": " + neighbors[2]);
-            Debug.Log(new Vector3(x, y, z - 1) + ": " + neighbors[3]);
-            Debug.Log(new Vector3(x + 1, y, z) + ": " + neighbors[4]);
-            Debug.Log(new Vector3(x - 1, y, z) + ": " + neighbors[5]);
         }
 
         public override string ToString()

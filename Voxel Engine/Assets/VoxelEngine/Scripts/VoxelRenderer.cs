@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 
+using Unity.VisualScripting;
+
 using UnityEngine;
 
 namespace TheAshBot.VoxelEngine
@@ -9,27 +11,96 @@ namespace TheAshBot.VoxelEngine
 
         private static readonly float UV_PIXEL_OFFSET = 0.0625f;
 
+        private static BitArray FRONT_FACE
+        {
+            get
+            {
+                return new BitArray(3);
+            }
+        }
+        private static BitArray BACK_FACE
+        {
+            get
+            {
+                BitArray bitArray = new BitArray(3);
+                bitArray.SetBit(0, 1);
+                return bitArray;
+            }
+        }
+        private static BitArray LEFT_FACE
+        {
+            get
+            {
+                BitArray bitArray = new BitArray(3);
+                bitArray.SetBit(1, 1);
+                return bitArray;
+            }
+        }
+        private static BitArray RIGHT_FACE
+        {
+            get
+            {
+                BitArray bitArray = new BitArray(3);
+                bitArray.SetBit(0, 1);
+                bitArray.SetBit(1, 1);
+                return bitArray;
+            }
+        }
+        private static BitArray TOP_FACE
+        {
+            get
+            {
+                BitArray bitArray = new BitArray(3);
+                bitArray.SetBit(2, 1);
+                return bitArray;
+            }
+        }
+        private static BitArray BOTTOM_FACE
+        {
+            get
+            {
+                BitArray bitArray = new BitArray(3);
+                bitArray.SetBit(0, 1);
+                bitArray.SetBit(2, 1);
+                return bitArray;
+            }
+        }
 
-        //private GenericGrid3D<VoxelNode> grid;
+
         private VoxelChunk voxelChunk;
         private MeshFilter meshFilter;
         private MeshRenderer meshRenderer;
         private List<Color32> textureColorList;
 
+        private Camera camera;
 
 
 
 
+
+        public VoxelRenderer(Vector3 origin, Camera camera)
+        {
+            GameObject gameObject = new GameObject("Voxel Grid Mesh");
+            meshFilter = gameObject.AddComponent<MeshFilter>();
+            meshRenderer = gameObject.AddComponent<MeshRenderer>();
+
+            voxelChunk = new VoxelChunk(1, origin);
+            voxelChunk.GetGrid().OnGridValueChanged += Grid_OnValueChanged;
+
+            textureColorList = new List<Color32>();
+        }
         public VoxelRenderer(Vector3 origin)
         {
             GameObject gameObject = new GameObject("Voxel Grid Mesh");
             meshFilter = gameObject.AddComponent<MeshFilter>();
             meshRenderer = gameObject.AddComponent<MeshRenderer>();
 
-            voxelChunk = new VoxelChunk(1, Vector3.zero);
+            voxelChunk = new VoxelChunk(1, origin);
             voxelChunk.GetGrid().OnGridValueChanged += Grid_OnValueChanged;
 
             textureColorList = new List<Color32>();
+
+            camera = Camera.main;
         }
 
 
@@ -45,11 +116,11 @@ namespace TheAshBot.VoxelEngine
         {
             Mesh mesh = new Mesh();
             mesh.name = "Voxel Grid Mesh";
-            for (int x = 0; x < voxelChunk.GetGrid().GetWidth(); x++)
+            for (byte x = 0; x < voxelChunk.GetGrid().GetWidth(); x++)
             {
-                for (int y = 0; y < voxelChunk.GetGrid().GetHeight(); y++)
+                for (byte y = 0; y < voxelChunk.GetGrid().GetHeight(); y++)
                 {
-                    for (int z = 0; z < voxelChunk.GetGrid().GetDepth(); z++)
+                    for (byte z = 0; z < voxelChunk.GetGrid().GetDepth(); z++)
                     {
                         if (IsFilled(x, y, z) == false)
                         {
@@ -58,6 +129,39 @@ namespace TheAshBot.VoxelEngine
                         }
 
                         BitArray neighbors = new BitArray(6);
+
+                        // Front
+                        if (!ShouldRenderFace(x, y, z, FRONT_FACE, camera.transform) == true)
+                        {
+                            neighbors.SetBit(0, 1);
+                        }
+                        // Back
+                        if (!ShouldRenderFace(x, y, z, BACK_FACE, camera.transform) == true)
+                        {
+                            neighbors.SetBit(1, 1);
+                        }
+                        // Left
+                        if (!ShouldRenderFace(x, y, z, LEFT_FACE, camera.transform) == true)
+                        {
+                            neighbors.SetBit(2, 1);
+                        }
+                        // Right
+                        if (!ShouldRenderFace(x, y, z, RIGHT_FACE, camera.transform) == true)
+                        {
+                            neighbors.SetBit(3, 1);
+                        }
+                        // Top
+                        if (!ShouldRenderFace(x, y, z, TOP_FACE, camera.transform) == true)
+                        {
+                            neighbors.SetBit(4, 1);
+                        }
+                        // Bottom
+                        if (!ShouldRenderFace(x, y, z, BOTTOM_FACE, camera.transform) == true)
+                        {
+                            neighbors.SetBit(5, 1);
+                        }
+
+                        /*
                         // Front
                         if (IsFilled(x, y, z + 1) == true)
                         {
@@ -88,8 +192,7 @@ namespace TheAshBot.VoxelEngine
                         {
                             neighbors.SetBit(5, 1);
                         }
-
-
+                        */
                         AddCube(ref mesh, voxelChunk.GetGrid().GetWorldPosition(x, y, z), neighbors, voxelChunk.GetGrid().GetGridObject(x, y, z).color);
                     }
                 }
@@ -122,6 +225,63 @@ namespace TheAshBot.VoxelEngine
             RenderVoxels();
         }
 
+        /// <summary>
+        /// will test to see if a face of a voxel should be rendered
+        /// </summary>
+        /// <param name="x">x position of the voxel on the voxel grid</param>
+        /// <param name="y">y position of the voxel on the voxel grid</param>
+        /// <param name="z">z position of the voxel on the voxel grid</param>
+        /// <param name="face">is a bit array with 3 bits. 0 = front; 1 = back; 2 = left; 3 = right; 4 = top; 5 = bottom;</param>
+        /// <param name="cameraForward">Is the cameras forward direction</param>
+        private bool ShouldRenderFace(byte x, byte y, byte z, BitArray face, Transform cameraTransform)
+        {
+            // Is empty
+            if (!IsFilled(x, y, z))
+            {
+                return false;
+            }
+
+            // Neighbor is filled
+            if (IsFilled(x + (face.GetValue_Byte() == 2 ? -1 : face.GetValue_Byte() == 3 ? 1 : 0),
+                         y + (face.GetValue_Byte() == 4 ? 1 : face.GetValue_Byte() == 5 ? -1 : 0),
+                         z + (face.GetValue_Byte() == 0 ? 1 : face.GetValue_Byte() == 1 ? -1 : 0)))
+            {
+                return false;
+            }
+
+            if (face.GetValue_Byte() == 0)
+            {
+                // z = 1
+                return (GetGrid().GetWorldPosition(x, y, z).z + (GetGrid().GetCellSize() / 2)) < cameraTransform.position.z;
+            }
+            if (face.GetValue_Byte() == 1)
+            {
+                // z = -1
+                return (GetGrid().GetWorldPosition(x, y, z).z - (GetGrid().GetCellSize() / 2)) > cameraTransform.position.z;
+            }
+            if (face.GetValue_Byte() == 2)
+            {
+                // x = -1
+                return (GetGrid().GetWorldPosition(x, y, z).x - (GetGrid().GetCellSize() / 2)) > cameraTransform.position.x;
+            }
+            if (face.GetValue_Byte() == 3)
+            {
+                // x = 1
+                return (GetGrid().GetWorldPosition(x, y, z).x + (GetGrid().GetCellSize() / 2)) < cameraTransform.position.x;
+            }
+            if (face.GetValue_Byte() == 4)
+            {
+                // y = 1
+                return (GetGrid().GetWorldPosition(x, y, z).y + (GetGrid().GetCellSize() / 2)) < cameraTransform.position.y;
+            }
+            if (face.GetValue_Byte() == 5)
+            {
+                // y = -1
+                return (GetGrid().GetWorldPosition(x, y, z).y - (GetGrid().GetCellSize() / 2)) > cameraTransform.position.y;
+            }
+
+            return true;
+        }
 
         /// <summary>
         /// This will add values for a cube onto a mesh.

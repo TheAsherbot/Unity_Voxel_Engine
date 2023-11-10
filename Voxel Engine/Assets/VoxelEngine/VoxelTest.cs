@@ -8,14 +8,12 @@ namespace TheAshBot.VoxelEngine
     {
 
         private GenericGrid3D<VoxelNode> grid;
-        [SerializeField] private Transform parent;
         
         private void Start()
         {
-
             #region Grid
 
-            VoxelRenderer voxelRenderer = new VoxelRenderer(new Vector3(0, 0));
+            VoxelRenderer voxelRenderer = new VoxelRenderer(new Vector3(-8, -8, -8));
             grid = voxelRenderer.GetGrid();
 
             for (int x = 0; x < grid.GetWidth(); x++)
@@ -63,7 +61,6 @@ namespace TheAshBot.VoxelEngine
                             }
                         }
 
-                        voxelNode.isFilled = true;
                         grid.SetGridObjectWithoutNotifying(x, y, z, voxelNode);
                     }
                 }

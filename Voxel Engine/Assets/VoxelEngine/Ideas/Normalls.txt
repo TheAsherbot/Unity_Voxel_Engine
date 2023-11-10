@@ -1,1 +1,1 @@
-If a faces normall is pointing towards the camera, and the camera in pointing towards the normall then render the face, if the normall in pointing the same direction as the camera, then do not render it. If the camera is facing away from the face then do not render it.
+If a faces normall from the voxel position is pointing away from the camera then do not rneder the voxel
