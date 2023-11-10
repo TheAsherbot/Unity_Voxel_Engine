@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 
-using Unity.VisualScripting;
-
 using UnityEngine;
 
 namespace TheAshBot.VoxelEngine
@@ -70,6 +68,8 @@ namespace TheAshBot.VoxelEngine
         private VoxelChunk voxelChunk;
         private MeshFilter meshFilter;
         private MeshRenderer meshRenderer;
+        private MeshFilter shadowMeshFilter;
+        private MeshRenderer shadowMeshRenderer;
         private List<Color32> textureColorList;
 
         private Camera camera;
@@ -83,17 +83,25 @@ namespace TheAshBot.VoxelEngine
             GameObject gameObject = new GameObject("Voxel Grid Mesh");
             meshFilter = gameObject.AddComponent<MeshFilter>();
             meshRenderer = gameObject.AddComponent<MeshRenderer>();
+            GameObject shadowGameObject = new GameObject("Voxel Grid Shadows Mesh");
+            shadowMeshFilter = shadowGameObject.AddComponent<MeshFilter>();
+            shadowMeshRenderer = shadowGameObject.AddComponent<MeshRenderer>();
 
             voxelChunk = new VoxelChunk(1, origin);
             voxelChunk.GetGrid().OnGridValueChanged += Grid_OnValueChanged;
 
             textureColorList = new List<Color32>();
+
+            this.camera = camera;
         }
         public VoxelRenderer(Vector3 origin)
         {
             GameObject gameObject = new GameObject("Voxel Grid Mesh");
             meshFilter = gameObject.AddComponent<MeshFilter>();
             meshRenderer = gameObject.AddComponent<MeshRenderer>();
+            GameObject shadowGameObject = new GameObject("Voxel Grid Shadows Mesh");
+            shadowMeshFilter = shadowGameObject.AddComponent<MeshFilter>();
+            shadowMeshRenderer = shadowGameObject.AddComponent<MeshRenderer>();
 
             voxelChunk = new VoxelChunk(1, origin);
             voxelChunk.GetGrid().OnGridValueChanged += Grid_OnValueChanged;
@@ -115,6 +123,7 @@ namespace TheAshBot.VoxelEngine
         public void RenderVoxels()
         {
             Mesh mesh = new Mesh();
+            Mesh shadowMesh = new Mesh();
             mesh.name = "Voxel Grid Mesh";
             for (byte x = 0; x < voxelChunk.GetGrid().GetWidth(); x++)
             {
@@ -122,78 +131,8 @@ namespace TheAshBot.VoxelEngine
                 {
                     for (byte z = 0; z < voxelChunk.GetGrid().GetDepth(); z++)
                     {
-                        if (IsFilled(x, y, z) == false)
-                        {
-                            // Empty
-                            continue;
-                        }
-
-                        BitArray neighbors = new BitArray(6);
-
-                        // Front
-                        if (!ShouldRenderFace(x, y, z, FRONT_FACE, camera.transform) == true)
-                        {
-                            neighbors.SetBit(0, 1);
-                        }
-                        // Back
-                        if (!ShouldRenderFace(x, y, z, BACK_FACE, camera.transform) == true)
-                        {
-                            neighbors.SetBit(1, 1);
-                        }
-                        // Left
-                        if (!ShouldRenderFace(x, y, z, LEFT_FACE, camera.transform) == true)
-                        {
-                            neighbors.SetBit(2, 1);
-                        }
-                        // Right
-                        if (!ShouldRenderFace(x, y, z, RIGHT_FACE, camera.transform) == true)
-                        {
-                            neighbors.SetBit(3, 1);
-                        }
-                        // Top
-                        if (!ShouldRenderFace(x, y, z, TOP_FACE, camera.transform) == true)
-                        {
-                            neighbors.SetBit(4, 1);
-                        }
-                        // Bottom
-                        if (!ShouldRenderFace(x, y, z, BOTTOM_FACE, camera.transform) == true)
-                        {
-                            neighbors.SetBit(5, 1);
-                        }
-
-                        /*
-                        // Front
-                        if (IsFilled(x, y, z + 1) == true)
-                        {
-                            neighbors.SetBit(0, 1);
-                        }
-                        // Back
-                        if (IsFilled(x, y, z - 1) == true)
-                        {
-                            neighbors.SetBit(1, 1);
-                        }
-                        // Left
-                        if (IsFilled(x - 1, y, z) == true)
-                        {
-                            neighbors.SetBit(2, 1);
-                        }
-                        // Right
-                        if (IsFilled(x + 1, y, z) == true)
-                        {
-                            neighbors.SetBit(3, 1);
-                        }
-                        // Top
-                        if (IsFilled(x, y + 1, z) == true)
-                        {
-                            neighbors.SetBit(4, 1);
-                        }
-                        // Bottom
-                        if (IsFilled(x, y - 1, z) == true)
-                        {
-                            neighbors.SetBit(5, 1);
-                        }
-                        */
-                        AddCube(ref mesh, voxelChunk.GetGrid().GetWorldPosition(x, y, z), neighbors, voxelChunk.GetGrid().GetGridObject(x, y, z).color);
+                        // Old(x, y, z, ref mesh);
+                        New(x, y, z, ref mesh, ref shadowMesh);
                     }
                 }
             }
@@ -207,14 +146,177 @@ namespace TheAshBot.VoxelEngine
             material.mainTexture = texture;
             material.color = Color.white;
             meshRenderer.material = material;
-            meshRenderer.SetMaterials(new List<Material> { material });
 
+            shadowMeshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
+            shadowMeshRenderer.material = material;
 
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
             mesh.RecalculateTangents();
 
+            shadowMeshFilter.mesh = shadowMesh;
             meshFilter.mesh = mesh;
+        }
+
+        private void Old(byte x, byte y, byte z, ref Mesh mesh)
+        {
+            if (IsFilled(x, y, z) == false)
+            {
+                // Empty
+                return;
+            }
+
+            BitArray neighbors = new BitArray(6);
+
+            // Front
+            if (IsFaceCovered(x, y, z, FRONT_FACE))
+            {
+                neighbors.SetBit(0, 1);
+            }
+            // Back
+            if (IsFaceCovered(x, y, z, BACK_FACE))
+            {
+                neighbors.SetBit(1, 1);
+            }
+            // Left
+            if (IsFaceCovered(x, y, z, LEFT_FACE))
+            {
+                neighbors.SetBit(2, 1);
+            }
+            // Right
+            if (IsFaceCovered(x, y, z, RIGHT_FACE))
+            {
+                neighbors.SetBit(3, 1);
+            }
+            // Top
+            if (IsFaceCovered(x, y, z, TOP_FACE))
+            {
+                neighbors.SetBit(4, 1);
+            }
+            // Bottom
+            if (IsFaceCovered(x, y, z, BOTTOM_FACE))
+            {
+                neighbors.SetBit(5, 1);
+            }
+
+            AddCube(ref mesh, voxelChunk.GetGrid().GetWorldPosition(x, y, z), neighbors, voxelChunk.GetGrid().GetGridObject(x, y, z).color);
+        }
+        private void New(byte x, byte y, byte z, ref Mesh mesh, ref Mesh shadowMesh)
+        {
+            if (IsFilled(x, y, z) == false)
+            {
+                // Empty
+                return;
+            }
+
+            BitArray neighbors = new BitArray(6);
+            BitArray shadowNeighbors = new BitArray(6);
+
+            shadowNeighbors.SetBit(0, 1);
+            shadowNeighbors.SetBit(1, 1);
+            shadowNeighbors.SetBit(2, 1);
+            shadowNeighbors.SetBit(3, 1);
+            shadowNeighbors.SetBit(4, 1);
+            shadowNeighbors.SetBit(5, 1);
+
+            // Front
+            if (!ShouldRenderFace(x, y, z, FRONT_FACE))
+            {
+                neighbors.SetBit(0, 1);
+                shadowNeighbors.SetBit(0, 0);
+            }
+            // Back
+            if (!ShouldRenderFace(x, y, z, BACK_FACE))
+            {
+                neighbors.SetBit(1, 1);
+                shadowNeighbors.SetBit(1, 0);
+            }
+            // Left
+            if (!ShouldRenderFace(x, y, z, LEFT_FACE))
+            {
+                neighbors.SetBit(2, 1);
+                shadowNeighbors.SetBit(2, 0);
+            }
+            // Right
+            if (!ShouldRenderFace(x, y, z, RIGHT_FACE))
+            {
+                neighbors.SetBit(3, 1);
+                shadowNeighbors.SetBit(3, 0);
+            }
+            // Top
+            if (!ShouldRenderFace(x, y, z, TOP_FACE))
+            {
+                neighbors.SetBit(4, 1);
+                shadowNeighbors.SetBit(4, 0);
+            }
+            // Bottom
+            if (!ShouldRenderFace(x, y, z, BOTTOM_FACE))
+            {
+                neighbors.SetBit(5, 1);
+                shadowNeighbors.SetBit(5, 0);
+            }
+
+
+            if (IsFacePointingTowardsCamera(x, y, z, FRONT_FACE) || IsFaceCovered(x, y, z, FRONT_FACE))
+            {
+                shadowNeighbors.SetBit(0, 1);
+            }
+            if (IsFacePointingTowardsCamera(x, y, z, BACK_FACE) || IsFaceCovered(x, y, z, BACK_FACE))
+            {
+                shadowNeighbors.SetBit(1, 1);
+            }
+            if (IsFacePointingTowardsCamera(x, y, z, LEFT_FACE) || IsFaceCovered(x, y, z, LEFT_FACE))
+            {
+                shadowNeighbors.SetBit(2, 1);
+            }
+            if (IsFacePointingTowardsCamera(x, y, z, RIGHT_FACE) || IsFaceCovered(x, y, z, RIGHT_FACE))
+            {
+                shadowNeighbors.SetBit(3, 1);
+            }
+            if (IsFacePointingTowardsCamera(x, y, z, TOP_FACE) || IsFaceCovered(x, y, z, TOP_FACE))
+            {
+                shadowNeighbors.SetBit(4, 1);
+            }
+            if (IsFacePointingTowardsCamera(x, y, z, BOTTOM_FACE) || IsFaceCovered(x, y, z, BOTTOM_FACE))
+            {
+                shadowNeighbors.SetBit(5, 1);
+            }
+
+
+            // Front
+            if (IsFilled(x, y, z + 1))
+            {
+                neighbors.SetBit(0, 1);
+            }
+            // Back
+            if (IsFilled(x, y, z - 1))
+            {
+                neighbors.SetBit(1, 1);
+            }
+            // Left
+            if (IsFilled(x - 1, y, z))
+            {
+                neighbors.SetBit(2, 1);
+            }
+            // Right
+            if (IsFilled(x + 1, y, z))
+            {
+                neighbors.SetBit(3, 1);
+            }
+            // Top
+            if (IsFilled(x, y + 1, z))
+            {
+                neighbors.SetBit(4, 1);
+            }
+            // Bottom
+            if (IsFilled(x, y - 1, z))
+            {
+                neighbors.SetBit(5, 1);
+            }
+
+
+            AddCube(ref mesh, voxelChunk.GetGrid().GetWorldPosition(x, y, z), neighbors, voxelChunk.GetGrid().GetGridObject(x, y, z).color);
+            AddCube(ref shadowMesh, voxelChunk.GetGrid().GetWorldPosition(x, y, z), shadowNeighbors, voxelChunk.GetGrid().GetGridObject(x, y, z).color);
         }
 
 
@@ -233,7 +335,7 @@ namespace TheAshBot.VoxelEngine
         /// <param name="z">z position of the voxel on the voxel grid</param>
         /// <param name="face">is a bit array with 3 bits. 0 = front; 1 = back; 2 = left; 3 = right; 4 = top; 5 = bottom;</param>
         /// <param name="cameraForward">Is the cameras forward direction</param>
-        private bool ShouldRenderFace(byte x, byte y, byte z, BitArray face, Transform cameraTransform)
+        private bool ShouldRenderFace(byte x, byte y, byte z, BitArray face)
         {
             // Is empty
             if (!IsFilled(x, y, z))
@@ -241,46 +343,65 @@ namespace TheAshBot.VoxelEngine
                 return false;
             }
 
-            // Neighbor is filled
-            if (IsFilled(x + (face.GetValue_Byte() == 2 ? -1 : face.GetValue_Byte() == 3 ? 1 : 0),
-                         y + (face.GetValue_Byte() == 4 ? 1 : face.GetValue_Byte() == 5 ? -1 : 0),
-                         z + (face.GetValue_Byte() == 0 ? 1 : face.GetValue_Byte() == 1 ? -1 : 0)))
+            if (IsFaceCovered(x, y, z, face))
             {
                 return false;
             }
 
+            if (!IsFacePointingTowardsCamera(x, y, z, face))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool IsFaceCovered(byte x, byte y, byte z, BitArray face)
+        {
+            if (IsFilled(x + (face.GetValue_Byte() == 2 ? -1 : face.GetValue_Byte() == 3 ? 1 : 0),
+                                     y + (face.GetValue_Byte() == 4 ? 1 : face.GetValue_Byte() == 5 ? -1 : 0),
+                                     z + (face.GetValue_Byte() == 0 ? 1 : face.GetValue_Byte() == 1 ? -1 : 0)))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private bool IsFacePointingTowardsCamera(byte x, byte y, byte z, BitArray face)
+        {
+            Vector3 cameraPosition = camera.transform.position;
             if (face.GetValue_Byte() == 0)
             {
                 // z = 1
-                return (GetGrid().GetWorldPosition(x, y, z).z + (GetGrid().GetCellSize() / 2)) < cameraTransform.position.z;
+                return (GetGrid().GetWorldPosition(x, y, z).z + (GetGrid().GetCellSize() / 2)) < cameraPosition.z;
             }
             if (face.GetValue_Byte() == 1)
             {
                 // z = -1
-                return (GetGrid().GetWorldPosition(x, y, z).z - (GetGrid().GetCellSize() / 2)) > cameraTransform.position.z;
+                return (GetGrid().GetWorldPosition(x, y, z).z - (GetGrid().GetCellSize() / 2)) > cameraPosition.z;
             }
             if (face.GetValue_Byte() == 2)
             {
                 // x = -1
-                return (GetGrid().GetWorldPosition(x, y, z).x - (GetGrid().GetCellSize() / 2)) > cameraTransform.position.x;
+                return (GetGrid().GetWorldPosition(x, y, z).x - (GetGrid().GetCellSize() / 2)) > cameraPosition.x;
             }
             if (face.GetValue_Byte() == 3)
             {
                 // x = 1
-                return (GetGrid().GetWorldPosition(x, y, z).x + (GetGrid().GetCellSize() / 2)) < cameraTransform.position.x;
+                return (GetGrid().GetWorldPosition(x, y, z).x + (GetGrid().GetCellSize() / 2)) < cameraPosition.x;
             }
             if (face.GetValue_Byte() == 4)
             {
                 // y = 1
-                return (GetGrid().GetWorldPosition(x, y, z).y + (GetGrid().GetCellSize() / 2)) < cameraTransform.position.y;
+                return (GetGrid().GetWorldPosition(x, y, z).y + (GetGrid().GetCellSize() / 2)) < cameraPosition.y;
             }
             if (face.GetValue_Byte() == 5)
             {
                 // y = -1
-                return (GetGrid().GetWorldPosition(x, y, z).y - (GetGrid().GetCellSize() / 2)) > cameraTransform.position.y;
+                return (GetGrid().GetWorldPosition(x, y, z).y - (GetGrid().GetCellSize() / 2)) > cameraPosition.y;
             }
 
-            return true;
+            return false;
         }
 
         /// <summary>

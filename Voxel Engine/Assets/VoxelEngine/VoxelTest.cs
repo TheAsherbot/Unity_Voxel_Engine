@@ -16,11 +16,13 @@ namespace TheAshBot.VoxelEngine
             VoxelRenderer voxelRenderer = new VoxelRenderer(new Vector3(-8, -8, -8));
             grid = voxelRenderer.GetGrid();
 
+            // Every cell
+
             for (int x = 0; x < grid.GetWidth(); x++)
             {
                 for (int y = 0; y < grid.GetHeight(); y++)
                 {
-                    for (int z = 0; z < grid.GetDepth(); z++)
+                    for (int z = 0; z < grid.GetHeight(); z++)
                     {
                         VoxelNode voxelNode = grid.GetGridObject(x, y, z);
                         voxelNode.isFilled = true;
@@ -29,6 +31,13 @@ namespace TheAshBot.VoxelEngine
                     }
                 }
             }
+
+
+
+
+
+            // Every other.
+/*
             for (int x = 0; x < grid.GetWidth(); x++)
             {
                 for (int y = 0; y < grid.GetHeight(); y++)
@@ -65,20 +74,7 @@ namespace TheAshBot.VoxelEngine
                     }
                 }
             }
-
-            for (int x = 0; x < grid.GetWidth(); x++)
-            {
-                for (int y = 0; y < grid.GetHeight(); y++)
-                {
-                    for (int z = 0; z < grid.GetDepth(); z++)
-                    {
-                        for (int index = 0; index < 6; index++)
-                        {
-                            //  Debug.Log($"X: {x}, Y: {y}, Z: {z}, Index: {index}, VoxelNode: {grid.GetGridObject(x, y, z).neighbors[index]}");
-                        }
-                    }
-                }
-            }
+*/
 
 
 
