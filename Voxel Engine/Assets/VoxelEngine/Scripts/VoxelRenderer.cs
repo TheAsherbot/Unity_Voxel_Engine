@@ -2,12 +2,13 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
+
 namespace TheAshBot.VoxelEngine
 {
-    public class VoxelRenderer
+    public class VoxelRenderer : MonoBehaviour
     {
 
-        private static readonly float UV_PIXEL_OFFSET = 0.0625f;
+        private static readonly float UV_PIXEL_OFFSET = 0.02f;
 
         private static BitArray FRONT_FACE
         {
@@ -68,13 +69,14 @@ namespace TheAshBot.VoxelEngine
         private VoxelChunk voxelChunk;
         private MeshFilter meshFilter;
         private MeshRenderer meshRenderer;
-        private MeshFilter shadowMeshFilter;
-        private MeshRenderer shadowMeshRenderer;
         private List<Color32> textureColorList;
 
-        private Camera camera;
+        private List<Vector3> vertices;
+        private List<Vector2> uvs;
+        private List<int> triangles;
 
 
+        private Texture2D texture;
 
 
 
@@ -83,36 +85,116 @@ namespace TheAshBot.VoxelEngine
             GameObject gameObject = new GameObject("Voxel Grid Mesh");
             meshFilter = gameObject.AddComponent<MeshFilter>();
             meshRenderer = gameObject.AddComponent<MeshRenderer>();
-            GameObject shadowGameObject = new GameObject("Voxel Grid Shadows Mesh");
-            shadowMeshFilter = shadowGameObject.AddComponent<MeshFilter>();
-            shadowMeshRenderer = shadowGameObject.AddComponent<MeshRenderer>();
 
             voxelChunk = new VoxelChunk(1, origin);
             voxelChunk.GetGrid().OnGridValueChanged += Grid_OnValueChanged;
 
             textureColorList = new List<Color32>();
 
-            this.camera = camera;
+            for (int x = 0; x < GetGrid().GetWidth(); x++)
+            {
+                for (int y = 0; y < GetGrid().GetHeight(); y++)
+                {
+                    for (int z = 0; z < GetGrid().GetDepth(); z++)
+                    {
+                        GetGrid().GetGridObject(x, y, z).UpdateNeighbors();
+                    }
+                }
+            }
         }
         public VoxelRenderer(Vector3 origin)
         {
             GameObject gameObject = new GameObject("Voxel Grid Mesh");
             meshFilter = gameObject.AddComponent<MeshFilter>();
             meshRenderer = gameObject.AddComponent<MeshRenderer>();
-            GameObject shadowGameObject = new GameObject("Voxel Grid Shadows Mesh");
-            shadowMeshFilter = shadowGameObject.AddComponent<MeshFilter>();
-            shadowMeshRenderer = shadowGameObject.AddComponent<MeshRenderer>();
 
             voxelChunk = new VoxelChunk(1, origin);
             voxelChunk.GetGrid().OnGridValueChanged += Grid_OnValueChanged;
 
             textureColorList = new List<Color32>();
 
-            camera = Camera.main;
+            for (int x = 0; x < GetGrid().GetWidth(); x++)
+            {
+                for (int y = 0; y < GetGrid().GetHeight(); y++)
+                {
+                    for (int z = 0; z < GetGrid().GetDepth(); z++)
+                    {
+                        GetGrid().GetGridObject(x, y, z).UpdateNeighbors();
+                    }
+                }
+            }
         }
 
 
+        private void Start()
+        {
+            texture = new Texture2D(50, 50);
 
+            GameObject gameObject = new GameObject("Voxel Grid Mesh");
+            meshFilter = gameObject.AddComponent<MeshFilter>();
+            meshRenderer = gameObject.AddComponent<MeshRenderer>();
+
+            voxelChunk = new VoxelChunk(1, new Vector3(0, 0, 0));
+            voxelChunk.GetGrid().OnGridValueChanged += Grid_OnValueChanged;
+
+            textureColorList = new List<Color32>();
+
+            for (byte x = 0; x < GetGrid().GetWidth(); x++)
+            {
+                for (byte y = 0; y < GetGrid().GetHeight(); y++)
+                {
+                    for (byte z = 0; z < GetGrid().GetDepth(); z++)
+                    {
+                        VoxelNode voxelNode = GetGrid().GetGridObject(x, y, z);
+
+                        BitArray bits = new BitArray(2);
+                        if (x % 2 == 0)
+                        {
+                            bits.SetBit(0, 1);
+                        }
+                        if (y % 2 == 0)
+                        {
+                            bits.SetBit(1, 1);
+                        }
+                        if (z % 2 == 0)
+                        {
+                            if ((bits.GetBit(0) == 0 && bits.GetBit(1) == 1) || (bits.GetBit(0) == 1 && bits.GetBit(1) == 0))
+                            {
+                                voxelNode.isFilled = true;
+                                voxelNode.color = Color.HSVToRGB(x / 16f, y / 16f, z / 16f);
+                            }
+                        }
+                        else
+                        {
+                            if ((bits.GetBit(0) == 1 && bits.GetBit(1) == 1) || (bits.GetBit(0) == 0 && bits.GetBit(1) == 0))
+                            {
+                                voxelNode.isFilled = true;
+                                voxelNode.color = Color.HSVToRGB(x / 16f, y / 16f, z / 16f);
+                            }
+                        }
+
+                        GetGrid().SetGridObjectWithoutNotifying(x, y, z, voxelNode);
+                    }
+                }
+            }
+
+            for (int x = 0; x < GetGrid().GetWidth(); x++)
+            {
+                for (int y = 0; y < GetGrid().GetHeight(); y++)
+                {
+                    for (int z = 0; z < GetGrid().GetDepth(); z++)
+                    {
+                        GetGrid().GetGridObject(x, y, z).UpdateNeighbors();
+                    }
+                }
+            }
+
+            vertices = new List<Vector3>();
+            uvs = new List<Vector2>();
+            triangles = new List<int>();
+
+            RenderVoxels();
+        }
 
 
         public GenericGrid3D<VoxelNode> GetGrid()
@@ -123,7 +205,6 @@ namespace TheAshBot.VoxelEngine
         public void RenderVoxels()
         {
             Mesh mesh = new Mesh();
-            Mesh shadowMesh = new Mesh();
             mesh.name = "Voxel Grid Mesh";
             for (byte x = 0; x < voxelChunk.GetGrid().GetWidth(); x++)
             {
@@ -131,11 +212,53 @@ namespace TheAshBot.VoxelEngine
                 {
                     for (byte z = 0; z < voxelChunk.GetGrid().GetDepth(); z++)
                     {
-                        // Old(x, y, z, ref mesh);
-                        New(x, y, z, ref mesh, ref shadowMesh);
+                        if (IsFilled(x, y, z) == false)
+                        {
+                            // Empty
+                            continue;
+                        }
+
+                        BitArray neighbors = new BitArray(6);
+
+                        // Front
+                        if (!ShouldRenderFace(x, y, z, FRONT_FACE))
+                        {
+                            neighbors.SetBit(0, 1);
+                        }
+                        // Back
+                        if (!ShouldRenderFace(x, y, z, BACK_FACE))
+                        {
+                            neighbors.SetBit(1, 1);
+                        }
+                        // Left
+                        if (!ShouldRenderFace(x, y, z, LEFT_FACE))
+                        {
+                            neighbors.SetBit(2, 1);
+                        }
+                        // Right
+                        if (!ShouldRenderFace(x, y, z, RIGHT_FACE))
+                        {
+                            neighbors.SetBit(3, 1);
+                        }
+                        // Top
+                        if (!ShouldRenderFace(x, y, z, TOP_FACE))
+                        {
+                            neighbors.SetBit(4, 1);
+                        }
+                        // Bottom
+                        if (!ShouldRenderFace(x, y, z, BOTTOM_FACE))
+                        {
+                            neighbors.SetBit(5, 1);
+                        }
+
+                        AddCube(voxelChunk.GetGrid().GetWorldPosition(x, y, z), neighbors, voxelChunk.GetGrid().GetGridObject(x, y, z).color);
                     }
                 }
             }
+
+            mesh.SetVertices(vertices);
+            mesh.SetTriangles(triangles, 0);
+            mesh.SetUVs(0, uvs);
 
 
 
@@ -147,178 +270,12 @@ namespace TheAshBot.VoxelEngine
             material.color = Color.white;
             meshRenderer.material = material;
 
-            shadowMeshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
-            shadowMeshRenderer.material = material;
-
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
             mesh.RecalculateTangents();
 
-            shadowMeshFilter.mesh = shadowMesh;
             meshFilter.mesh = mesh;
         }
-
-        private void Old(byte x, byte y, byte z, ref Mesh mesh)
-        {
-            if (IsFilled(x, y, z) == false)
-            {
-                // Empty
-                return;
-            }
-
-            BitArray neighbors = new BitArray(6);
-
-            // Front
-            if (IsFaceCovered(x, y, z, FRONT_FACE))
-            {
-                neighbors.SetBit(0, 1);
-            }
-            // Back
-            if (IsFaceCovered(x, y, z, BACK_FACE))
-            {
-                neighbors.SetBit(1, 1);
-            }
-            // Left
-            if (IsFaceCovered(x, y, z, LEFT_FACE))
-            {
-                neighbors.SetBit(2, 1);
-            }
-            // Right
-            if (IsFaceCovered(x, y, z, RIGHT_FACE))
-            {
-                neighbors.SetBit(3, 1);
-            }
-            // Top
-            if (IsFaceCovered(x, y, z, TOP_FACE))
-            {
-                neighbors.SetBit(4, 1);
-            }
-            // Bottom
-            if (IsFaceCovered(x, y, z, BOTTOM_FACE))
-            {
-                neighbors.SetBit(5, 1);
-            }
-
-            AddCube(ref mesh, voxelChunk.GetGrid().GetWorldPosition(x, y, z), neighbors, voxelChunk.GetGrid().GetGridObject(x, y, z).color);
-        }
-        private void New(byte x, byte y, byte z, ref Mesh mesh, ref Mesh shadowMesh)
-        {
-            if (IsFilled(x, y, z) == false)
-            {
-                // Empty
-                return;
-            }
-
-            BitArray neighbors = new BitArray(6);
-            BitArray shadowNeighbors = new BitArray(6);
-
-            shadowNeighbors.SetBit(0, 1);
-            shadowNeighbors.SetBit(1, 1);
-            shadowNeighbors.SetBit(2, 1);
-            shadowNeighbors.SetBit(3, 1);
-            shadowNeighbors.SetBit(4, 1);
-            shadowNeighbors.SetBit(5, 1);
-
-            // Front
-            if (!ShouldRenderFace(x, y, z, FRONT_FACE))
-            {
-                neighbors.SetBit(0, 1);
-                shadowNeighbors.SetBit(0, 0);
-            }
-            // Back
-            if (!ShouldRenderFace(x, y, z, BACK_FACE))
-            {
-                neighbors.SetBit(1, 1);
-                shadowNeighbors.SetBit(1, 0);
-            }
-            // Left
-            if (!ShouldRenderFace(x, y, z, LEFT_FACE))
-            {
-                neighbors.SetBit(2, 1);
-                shadowNeighbors.SetBit(2, 0);
-            }
-            // Right
-            if (!ShouldRenderFace(x, y, z, RIGHT_FACE))
-            {
-                neighbors.SetBit(3, 1);
-                shadowNeighbors.SetBit(3, 0);
-            }
-            // Top
-            if (!ShouldRenderFace(x, y, z, TOP_FACE))
-            {
-                neighbors.SetBit(4, 1);
-                shadowNeighbors.SetBit(4, 0);
-            }
-            // Bottom
-            if (!ShouldRenderFace(x, y, z, BOTTOM_FACE))
-            {
-                neighbors.SetBit(5, 1);
-                shadowNeighbors.SetBit(5, 0);
-            }
-
-
-            if (IsFacePointingTowardsCamera(x, y, z, FRONT_FACE) || IsFaceCovered(x, y, z, FRONT_FACE))
-            {
-                shadowNeighbors.SetBit(0, 1);
-            }
-            if (IsFacePointingTowardsCamera(x, y, z, BACK_FACE) || IsFaceCovered(x, y, z, BACK_FACE))
-            {
-                shadowNeighbors.SetBit(1, 1);
-            }
-            if (IsFacePointingTowardsCamera(x, y, z, LEFT_FACE) || IsFaceCovered(x, y, z, LEFT_FACE))
-            {
-                shadowNeighbors.SetBit(2, 1);
-            }
-            if (IsFacePointingTowardsCamera(x, y, z, RIGHT_FACE) || IsFaceCovered(x, y, z, RIGHT_FACE))
-            {
-                shadowNeighbors.SetBit(3, 1);
-            }
-            if (IsFacePointingTowardsCamera(x, y, z, TOP_FACE) || IsFaceCovered(x, y, z, TOP_FACE))
-            {
-                shadowNeighbors.SetBit(4, 1);
-            }
-            if (IsFacePointingTowardsCamera(x, y, z, BOTTOM_FACE) || IsFaceCovered(x, y, z, BOTTOM_FACE))
-            {
-                shadowNeighbors.SetBit(5, 1);
-            }
-
-
-            // Front
-            if (IsFilled(x, y, z + 1))
-            {
-                neighbors.SetBit(0, 1);
-            }
-            // Back
-            if (IsFilled(x, y, z - 1))
-            {
-                neighbors.SetBit(1, 1);
-            }
-            // Left
-            if (IsFilled(x - 1, y, z))
-            {
-                neighbors.SetBit(2, 1);
-            }
-            // Right
-            if (IsFilled(x + 1, y, z))
-            {
-                neighbors.SetBit(3, 1);
-            }
-            // Top
-            if (IsFilled(x, y + 1, z))
-            {
-                neighbors.SetBit(4, 1);
-            }
-            // Bottom
-            if (IsFilled(x, y - 1, z))
-            {
-                neighbors.SetBit(5, 1);
-            }
-
-
-            AddCube(ref mesh, voxelChunk.GetGrid().GetWorldPosition(x, y, z), neighbors, voxelChunk.GetGrid().GetGridObject(x, y, z).color);
-            AddCube(ref shadowMesh, voxelChunk.GetGrid().GetWorldPosition(x, y, z), shadowNeighbors, voxelChunk.GetGrid().GetGridObject(x, y, z).color);
-        }
-
 
 
 
@@ -348,11 +305,6 @@ namespace TheAshBot.VoxelEngine
                 return false;
             }
 
-            if (!IsFacePointingTowardsCamera(x, y, z, face))
-            {
-                return false;
-            }
-
             return true;
         }
 
@@ -367,50 +319,13 @@ namespace TheAshBot.VoxelEngine
             return false;
         }
 
-        private bool IsFacePointingTowardsCamera(byte x, byte y, byte z, BitArray face)
-        {
-            Vector3 cameraPosition = camera.transform.position;
-            if (face.GetValue_Byte() == 0)
-            {
-                // z = 1
-                return (GetGrid().GetWorldPosition(x, y, z).z + (GetGrid().GetCellSize() / 2)) < cameraPosition.z;
-            }
-            if (face.GetValue_Byte() == 1)
-            {
-                // z = -1
-                return (GetGrid().GetWorldPosition(x, y, z).z - (GetGrid().GetCellSize() / 2)) > cameraPosition.z;
-            }
-            if (face.GetValue_Byte() == 2)
-            {
-                // x = -1
-                return (GetGrid().GetWorldPosition(x, y, z).x - (GetGrid().GetCellSize() / 2)) > cameraPosition.x;
-            }
-            if (face.GetValue_Byte() == 3)
-            {
-                // x = 1
-                return (GetGrid().GetWorldPosition(x, y, z).x + (GetGrid().GetCellSize() / 2)) < cameraPosition.x;
-            }
-            if (face.GetValue_Byte() == 4)
-            {
-                // y = 1
-                return (GetGrid().GetWorldPosition(x, y, z).y + (GetGrid().GetCellSize() / 2)) < cameraPosition.y;
-            }
-            if (face.GetValue_Byte() == 5)
-            {
-                // y = -1
-                return (GetGrid().GetWorldPosition(x, y, z).y - (GetGrid().GetCellSize() / 2)) > cameraPosition.y;
-            }
-
-            return false;
-        }
-
         /// <summary>
         /// This will add values for a cube onto a mesh.
         /// </summary>
         /// <param name="mesh">is the mash that the cube is being added to</param>
         /// <param name="origin">Is the bottom left back corner of the cube relative to the position of the GamObject with the mesh renderer.</param>
         /// <param name="neighbors">Needs 6 bits. 0 = Render Face. 1 = Do not render facer. index: 0 = Front, 1 = Back, 2 = Left, 4 = Right, 5 = Top, 6 = Bottom</param>
-        private void AddCube(ref Mesh mesh, Vector3 origin, BitArray neighbors, Color32 color)
+        private void AddCube(Vector3 origin, BitArray neighbors, Color32 color)
         {
             if (neighbors.GetValue_Byte() >= 63)
             {
@@ -419,27 +334,19 @@ namespace TheAshBot.VoxelEngine
 
             float cellSize = voxelChunk.GetGrid().GetCellSize();
 
-            List<Vector3> vertices = new List<Vector3>();
-            List<Vector2> uvs = new List<Vector2>();
-            List<int> triangles = new List<int>();
-
-            mesh.GetVertices(vertices);
-            mesh.GetUVs(0, uvs);
-            mesh.GetTriangles(triangles, 0);
-
             int startVertexIndex = vertices.Count;
 
             // Front
             if (neighbors.GetBit(0) == 0)
             {
                 vertices.AddRange(new List<Vector3>
-            {
-                origin + new Vector3(cellSize, 0, cellSize), // 0
-                origin + new Vector3(cellSize, cellSize, cellSize), // 1
-                origin + new Vector3(0, cellSize, cellSize), // 2
-                origin + new Vector3(0, 0, cellSize), // 3
-            });
-                AddUV(ref uvs, color);
+                {
+                    origin + new Vector3(cellSize, 0, cellSize), // 0
+                    origin + new Vector3(cellSize, cellSize, cellSize), // 1
+                    origin + new Vector3(0, cellSize, cellSize), // 2
+                    origin + new Vector3(0, 0, cellSize), // 3
+                });
+                AddUV(color);
                 AddTriangles(ref triangles, startVertexIndex);
                 startVertexIndex += 4;
             }
@@ -447,13 +354,13 @@ namespace TheAshBot.VoxelEngine
             if (neighbors.GetBit(1) == 0)
             {
                 vertices.AddRange(new List<Vector3>
-            {
-                origin + new Vector3(0, 0, 0), // 0
-                origin + new Vector3(0, cellSize, 0), // 1
-                origin + new Vector3(cellSize, cellSize, 0), // 2
-                origin + new Vector3(cellSize, 0, 0), // 3
-            });
-                AddUV(ref uvs, color);
+                {
+                    origin + new Vector3(0, 0, 0), // 0
+                    origin + new Vector3(0, cellSize, 0), // 1
+                    origin + new Vector3(cellSize, cellSize, 0), // 2
+                    origin + new Vector3(cellSize, 0, 0), // 3
+                });
+                AddUV(color);
                 AddTriangles(ref triangles, startVertexIndex);
                 startVertexIndex += 4;
             }
@@ -461,13 +368,13 @@ namespace TheAshBot.VoxelEngine
             if (neighbors.GetBit(2) == 0)
             {
                 vertices.AddRange(new List<Vector3>
-            {
-                origin + new Vector3(0, 0, cellSize), // 0
-                origin + new Vector3(0, cellSize, cellSize), // 1
-                origin + new Vector3(0, cellSize, 0), // 2
-                origin + new Vector3(0, 0, 0), // 3
-            });
-                AddUV(ref uvs, color);
+                {
+                    origin + new Vector3(0, 0, cellSize), // 0
+                    origin + new Vector3(0, cellSize, cellSize), // 1
+                    origin + new Vector3(0, cellSize, 0), // 2
+                    origin + new Vector3(0, 0, 0), // 3
+                });
+                AddUV(color);
                 AddTriangles(ref triangles, startVertexIndex);
                 startVertexIndex += 4;
             }
@@ -475,13 +382,13 @@ namespace TheAshBot.VoxelEngine
             if (neighbors.GetBit(3) == 0)
             {
                 vertices.AddRange(new List<Vector3>
-            {
-                origin + new Vector3(cellSize, 0, 0), // 0
-                origin + new Vector3(cellSize, cellSize, 0), // 1
-                origin + new Vector3(cellSize, cellSize, cellSize), // 2
-                origin + new Vector3(cellSize, 0, cellSize), // 3
-            });
-                AddUV(ref uvs, color);
+                {
+                    origin + new Vector3(cellSize, 0, 0), // 0
+                    origin + new Vector3(cellSize, cellSize, 0), // 1
+                    origin + new Vector3(cellSize, cellSize, cellSize), // 2
+                    origin + new Vector3(cellSize, 0, cellSize), // 3
+                });
+                AddUV(color);
                 AddTriangles(ref triangles, startVertexIndex);
                 startVertexIndex += 4;
             }
@@ -489,13 +396,13 @@ namespace TheAshBot.VoxelEngine
             if (neighbors.GetBit(4) == 0)
             {
                 vertices.AddRange(new List<Vector3>
-            {
-                origin + new Vector3(0, cellSize, 0), // 0
-                origin + new Vector3(0, cellSize, cellSize), // 1
-                origin + new Vector3(cellSize, cellSize, cellSize), // 2
-                origin + new Vector3(cellSize, cellSize, 0), // 3
-            });
-                AddUV(ref uvs, color);
+                {
+                    origin + new Vector3(0, cellSize, 0), // 0
+                    origin + new Vector3(0, cellSize, cellSize), // 1
+                    origin + new Vector3(cellSize, cellSize, cellSize), // 2
+                    origin + new Vector3(cellSize, cellSize, 0), // 3
+                });
+                AddUV(color);
                 AddTriangles(ref triangles, startVertexIndex);
                 startVertexIndex += 4;
             }
@@ -503,56 +410,41 @@ namespace TheAshBot.VoxelEngine
             if (neighbors.GetBit(5) == 0)
             {
                 vertices.AddRange(new List<Vector3>
-            {
-                origin + new Vector3(0, 0, cellSize), // 0
-                origin + new Vector3(0, 0, 0), // 1
-                origin + new Vector3(cellSize, 0, 0), // 2
-                origin + new Vector3(cellSize, 0, cellSize), // 3
-            });
-                AddUV(ref uvs, color);
+                {
+                    origin + new Vector3(0, 0, cellSize), // 0
+                    origin + new Vector3(0, 0, 0), // 1
+                    origin + new Vector3(cellSize, 0, 0), // 2
+                    origin + new Vector3(cellSize, 0, cellSize), // 3
+                });
+                AddUV(color);
                 AddTriangles(ref triangles, startVertexIndex);
             }
-
-            mesh.SetVertices(vertices);
-            mesh.SetUVs(0, uvs);
-            mesh.SetTriangles(triangles, 0);
         }
 
-        private void AddUV(ref List<Vector2> uvs, Color32 color)
+        private void AddUV(Color32 color)
         {
-            byte uvIndex = 0;
-            if (textureColorList.Contains(color))
-            {
-                uvIndex = (byte)textureColorList.FindIndex(foundColor => foundColor.Equals(color));
-            }
-            else if (textureColorList.Count >= 256)
-            {
-                uvIndex = (byte)color.GetClosestColorRBG(textureColorList, color);
-            }
-            else
-            {
-                // Does not have the color, and has space
-                uvIndex = (byte)textureColorList.Count;
-                textureColorList.Add(color);
-            }
+            short uvIndex;
+
+            uvIndex = (short)textureColorList.Count;
+            textureColorList.Add(color);
 
             Vector2 origin = new Vector2(Mathf.Round(uvIndex / 16f), uvIndex % 16);
             uvs.AddRange(new List<Vector2>
-        {
-            origin / 16f    , // 0
-            origin / 16f + new Vector2(0, UV_PIXEL_OFFSET), // 1
-            origin / 16f + new Vector2(UV_PIXEL_OFFSET, UV_PIXEL_OFFSET), // 2
-            origin / 16f + new Vector2(UV_PIXEL_OFFSET, 0), // 3
-        });
+            {
+                origin / 50f    , // 0
+                origin / 50f + new Vector2(0, UV_PIXEL_OFFSET), // 1
+                origin / 50f + new Vector2(UV_PIXEL_OFFSET, UV_PIXEL_OFFSET), // 2
+                origin / 50f + new Vector2(UV_PIXEL_OFFSET, 0), // 3
+            });
         }
 
         private void AddTriangles(ref List<int> triangles, int startVertexIndex)
         {
             triangles.AddRange(new List<int>
-        {
-            startVertexIndex, startVertexIndex + 1, startVertexIndex + 2,
-            startVertexIndex, startVertexIndex + 2, startVertexIndex + 3,
-        });
+            {
+                startVertexIndex, startVertexIndex + 1, startVertexIndex + 2,
+                startVertexIndex, startVertexIndex + 2, startVertexIndex + 3,
+            });
         }
 
         private bool IsFilled(int x, int y, int z)
@@ -569,37 +461,17 @@ namespace TheAshBot.VoxelEngine
 
         private Texture2D GetTexture()
         {
-            byte size = 16;
-            Texture2D texture = new Texture2D(size, size);
+            byte size = 50;
 
             for (byte x = 0; x < size; x++)
             {
                 for (byte y = 0; y < size; y++)
                 {
-                    texture.SetPixel(x, y, GetTextureColorFromXY(x, y));
+                    texture.SetPixel(x, y, /*textureColorList[x * 50 + y]*/ Color.white);
                 }
             }
 
             return texture;
-        }
-
-        private Color GetTextureColorFromXY(byte x, byte y)
-        {
-            Color color = default;
-            try
-            {
-                color = textureColorList[x * 16 + y];
-            }
-            catch (System.Exception)
-            {
-
-            }
-
-            if (color == default)
-            {
-                color = Color.white;
-            }
-            return color;
         }
 
 

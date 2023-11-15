@@ -154,7 +154,7 @@ namespace TheAshBot.ThreeDimentional
         public static Vector3 GetMousePosition3D(Camera camera, LayerMask layerMask)
         {
             Ray ray = camera.ScreenPointToRay(MousePosition);
-            UnityEngine.Physics.Raycast(ray, out RaycastHit raycastHit, float.MaxValue, layerMask);
+            Physics.Raycast(ray, out RaycastHit raycastHit, float.MaxValue, layerMask);
             return raycastHit.point;
         }
 
@@ -166,7 +166,7 @@ namespace TheAshBot.ThreeDimentional
         public static Vector3 GetMousePosition3D(Camera camera)
         {
             Ray ray = camera.ScreenPointToRay(MousePosition);
-            UnityEngine.Physics.Raycast(ray, out RaycastHit raycastHit, float.MaxValue);
+            Physics.Raycast(ray, out RaycastHit raycastHit, float.MaxValue);
             return raycastHit.point;
         }
 
