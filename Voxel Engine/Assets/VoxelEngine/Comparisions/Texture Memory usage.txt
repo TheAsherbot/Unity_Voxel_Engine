@@ -1,0 +1,11 @@
+RAM USAGE
+
+
+
+No Texture
+120 mb
+
+Texture
+
+134.4 mb
+

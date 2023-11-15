@@ -1,24 +1,69 @@
-using UnityEngine;
-
-using System.Collections;
 using TheAshBot.ThreeDimentional;
+
+using Unity.VisualScripting.Dependencies.NCalc;
+
+using UnityEngine;
 
 namespace TheAshBot.VoxelEngine
 {
     public class VoxelTest : MonoBehaviour
     {
-/*
+
         private GenericGrid3D<VoxelNode> grid;
-        
+
+
+
+        [SerializeField] private Texture texture;
+
+
         private void Start()
         {
+
+
+
             #region Grid
 
             VoxelRenderer voxelRenderer = new VoxelRenderer(new Vector3(-8, -8, -8));
             grid = voxelRenderer.GetGrid();
 
-            // Every cell
 
+
+            ColorVoxels();
+
+            // PerlinNoise();
+
+            CheckerBoard();
+
+            // Half();
+
+            // Full();
+
+
+
+
+            grid.TriggerGridObjectChanged(0, 0, 0);
+
+            #endregion
+            texture = voxelRenderer.texture;
+        }
+
+
+        private void Update()
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                Vector3 mousePosition = Mouse3D.GetMousePosition3D();
+                VoxelNode voxelNode = grid.GetGridObject(mousePosition);
+                voxelNode.isFilled = false;
+                grid.SetGridObject(mousePosition, voxelNode);
+                Mouse3D.DebugLogMousePosition3D();
+            }
+        }
+
+
+
+        private void PerlinNoise()
+        {
             for (int x = 0; x < grid.GetWidth(); x++)
             {
                 for (int z = 0; z < grid.GetDepth(); z++)
@@ -33,13 +78,26 @@ namespace TheAshBot.VoxelEngine
                     }
                 }
             }
+        }
 
+        private void ColorVoxels()
+        {
+            for (int x = 0; x < grid.GetWidth(); x++)
+            {
+                for (int y = 0; y < grid.GetHeight(); y++)
+                {
+                    for (int z = 0; z < grid.GetDepth(); z++)
+                    {
+                        VoxelNode voxelNode = grid.GetGridObject(x, y, z);
+                        voxelNode.color = Color.HSVToRGB(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f));
+                        grid.SetGridObjectWithoutNotifying(x, y, z, voxelNode);
+                    }
+                }
+            }
+        }
 
-
-
-
-            // Every other.
-
+        private void CheckerBoard()
+        {
             for (int x = 0; x < grid.GetWidth(); x++)
             {
                 for (int y = 0; y < grid.GetHeight(); y++)
@@ -62,7 +120,6 @@ namespace TheAshBot.VoxelEngine
                             if ((bits.GetBit(0) == 0 && bits.GetBit(1) == 1) || (bits.GetBit(0) == 1 && bits.GetBit(1) == 0))
                             {
                                 voxelNode.isFilled = true;
-                                voxelNode.color = Color.HSVToRGB(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f));
                             }
                         }
                         else
@@ -70,7 +127,6 @@ namespace TheAshBot.VoxelEngine
                             if ((bits.GetBit(0) == 1 && bits.GetBit(1) == 1) || (bits.GetBit(0) == 0 && bits.GetBit(1) == 0))
                             {
                                 voxelNode.isFilled = true;
-                                voxelNode.color = Color.HSVToRGB(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f));
                             }
                         }
 
@@ -78,26 +134,40 @@ namespace TheAshBot.VoxelEngine
                     }
                 }
             }
-
-
-
-            grid.TriggerGridObjectChanged(0, 0, 0);
-
-            #endregion
-
         }
 
-        private void Update()
+        private void Half()
         {
-            if (Input.GetMouseButton(0))
+            for (int x = 0; x < grid.GetWidth(); x++)
             {
-                Debug.Log(grid.GetGridObject(new Vector3(1, 0, 1)).neighbors[0].isFilled);
-                VoxelNode voxel = grid.GetGridObject(new Vector3 (1, 1, 1));
-                voxel.isFilled = false;
-                grid.SetGridObject(new Vector3(1, 1, 1), voxel);
-                Debug.Log(grid.GetGridObject(new Vector3(1, 0, 1)).neighbors[0].isFilled);
+                for (int y = 0; y < grid.GetHeight() / 2; y++)
+                {
+                    for (int z = 0; z < grid.GetDepth(); z++)
+                    {
+                        VoxelNode voxelNode = grid.GetGridObject(x, y, z);
+                        voxelNode.isFilled = true;
+                        grid.SetGridObjectWithoutNotifying(x, y, z, voxelNode);
+                    }
+                }
             }
         }
-*/
+
+        private void Full()
+        {
+            for (int x = 0; x < grid.GetWidth(); x++)
+            {
+                for (int y = 0; y < grid.GetHeight(); y++)
+                {
+                    for (int z = 0; z < grid.GetDepth(); z++)
+                    {
+                        VoxelNode voxelNode = grid.GetGridObject(x, y, z);
+                        voxelNode.isFilled = true;
+                        grid.SetGridObjectWithoutNotifying(x, y, z, voxelNode);
+                    }
+                }
+            }
+        }
+
+
     }
 }

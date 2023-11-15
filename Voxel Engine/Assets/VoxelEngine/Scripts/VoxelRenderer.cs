@@ -5,10 +5,11 @@ using UnityEngine;
 
 namespace TheAshBot.VoxelEngine
 {
-    public class VoxelRenderer : MonoBehaviour
+    public class VoxelRenderer
     {
 
-        private static readonly float UV_PIXEL_OFFSET = 0.02f;
+        private static readonly float UV_3_QUARTER_PIXEL_OFFSET = 0.015f;
+        private static readonly float UV_QUARTER_PIXEL_OFFSET = 0.005f;
 
         private static BitArray FRONT_FACE
         {
@@ -69,50 +70,29 @@ namespace TheAshBot.VoxelEngine
         private VoxelChunk voxelChunk;
         private MeshFilter meshFilter;
         private MeshRenderer meshRenderer;
-        private List<Color32> textureColorList;
+        private MeshCollider meshCollider;
 
         private List<Vector3> vertices;
         private List<Vector2> uvs;
         private List<int> triangles;
 
 
-        private Texture2D texture;
+        public Texture2D texture;
+        private short textureIndex;
 
 
-
-        public VoxelRenderer(Vector3 origin, Camera camera)
-        {
-            GameObject gameObject = new GameObject("Voxel Grid Mesh");
-            meshFilter = gameObject.AddComponent<MeshFilter>();
-            meshRenderer = gameObject.AddComponent<MeshRenderer>();
-
-            voxelChunk = new VoxelChunk(1, origin);
-            voxelChunk.GetGrid().OnGridValueChanged += Grid_OnValueChanged;
-
-            textureColorList = new List<Color32>();
-
-            for (int x = 0; x < GetGrid().GetWidth(); x++)
-            {
-                for (int y = 0; y < GetGrid().GetHeight(); y++)
-                {
-                    for (int z = 0; z < GetGrid().GetDepth(); z++)
-                    {
-                        GetGrid().GetGridObject(x, y, z).UpdateNeighbors();
-                    }
-                }
-            }
-        }
         public VoxelRenderer(Vector3 origin)
         {
+            Material material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+
             GameObject gameObject = new GameObject("Voxel Grid Mesh");
             meshFilter = gameObject.AddComponent<MeshFilter>();
             meshRenderer = gameObject.AddComponent<MeshRenderer>();
+            meshCollider = gameObject.AddComponent<MeshCollider>();
 
             voxelChunk = new VoxelChunk(1, origin);
             voxelChunk.GetGrid().OnGridValueChanged += Grid_OnValueChanged;
 
-            textureColorList = new List<Color32>();
-
             for (int x = 0; x < GetGrid().GetWidth(); x++)
             {
                 for (int y = 0; y < GetGrid().GetHeight(); y++)
@@ -123,77 +103,6 @@ namespace TheAshBot.VoxelEngine
                     }
                 }
             }
-        }
-
-
-        private void Start()
-        {
-            texture = new Texture2D(50, 50);
-
-            GameObject gameObject = new GameObject("Voxel Grid Mesh");
-            meshFilter = gameObject.AddComponent<MeshFilter>();
-            meshRenderer = gameObject.AddComponent<MeshRenderer>();
-
-            voxelChunk = new VoxelChunk(1, new Vector3(0, 0, 0));
-            voxelChunk.GetGrid().OnGridValueChanged += Grid_OnValueChanged;
-
-            textureColorList = new List<Color32>();
-
-            for (byte x = 0; x < GetGrid().GetWidth(); x++)
-            {
-                for (byte y = 0; y < GetGrid().GetHeight(); y++)
-                {
-                    for (byte z = 0; z < GetGrid().GetDepth(); z++)
-                    {
-                        VoxelNode voxelNode = GetGrid().GetGridObject(x, y, z);
-
-                        BitArray bits = new BitArray(2);
-                        if (x % 2 == 0)
-                        {
-                            bits.SetBit(0, 1);
-                        }
-                        if (y % 2 == 0)
-                        {
-                            bits.SetBit(1, 1);
-                        }
-                        if (z % 2 == 0)
-                        {
-                            if ((bits.GetBit(0) == 0 && bits.GetBit(1) == 1) || (bits.GetBit(0) == 1 && bits.GetBit(1) == 0))
-                            {
-                                voxelNode.isFilled = true;
-                                voxelNode.color = Color.HSVToRGB(x / 16f, y / 16f, z / 16f);
-                            }
-                        }
-                        else
-                        {
-                            if ((bits.GetBit(0) == 1 && bits.GetBit(1) == 1) || (bits.GetBit(0) == 0 && bits.GetBit(1) == 0))
-                            {
-                                voxelNode.isFilled = true;
-                                voxelNode.color = Color.HSVToRGB(x / 16f, y / 16f, z / 16f);
-                            }
-                        }
-
-                        GetGrid().SetGridObjectWithoutNotifying(x, y, z, voxelNode);
-                    }
-                }
-            }
-
-            for (int x = 0; x < GetGrid().GetWidth(); x++)
-            {
-                for (int y = 0; y < GetGrid().GetHeight(); y++)
-                {
-                    for (int z = 0; z < GetGrid().GetDepth(); z++)
-                    {
-                        GetGrid().GetGridObject(x, y, z).UpdateNeighbors();
-                    }
-                }
-            }
-
-            vertices = new List<Vector3>();
-            uvs = new List<Vector2>();
-            triangles = new List<int>();
-
-            RenderVoxels();
         }
 
 
@@ -204,6 +113,13 @@ namespace TheAshBot.VoxelEngine
 
         public void RenderVoxels()
         {
+            textureIndex = 0;
+            vertices = new List<Vector3>();
+            uvs = new List<Vector2>();
+            triangles = new List<int>();
+            texture = new Texture2D(50, 50);
+
+
             Mesh mesh = new Mesh();
             mesh.name = "Voxel Grid Mesh";
             for (byte x = 0; x < voxelChunk.GetGrid().GetWidth(); x++)
@@ -261,9 +177,7 @@ namespace TheAshBot.VoxelEngine
             mesh.SetUVs(0, uvs);
 
 
-
-            Material material = new Material(meshRenderer.material);
-            Texture2D texture = GetTexture();
+            Material material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
             texture.filterMode = FilterMode.Point;
             texture.Apply();
             material.mainTexture = texture;
@@ -274,7 +188,8 @@ namespace TheAshBot.VoxelEngine
             mesh.RecalculateBounds();
             mesh.RecalculateTangents();
 
-            meshFilter.mesh = mesh;
+            meshFilter.sharedMesh = mesh;
+            meshCollider.sharedMesh = mesh;
         }
 
 
@@ -322,7 +237,6 @@ namespace TheAshBot.VoxelEngine
         /// <summary>
         /// This will add values for a cube onto a mesh.
         /// </summary>
-        /// <param name="mesh">is the mash that the cube is being added to</param>
         /// <param name="origin">Is the bottom left back corner of the cube relative to the position of the GamObject with the mesh renderer.</param>
         /// <param name="neighbors">Needs 6 bits. 0 = Render Face. 1 = Do not render facer. index: 0 = Front, 1 = Back, 2 = Left, 4 = Right, 5 = Top, 6 = Bottom</param>
         private void AddCube(Vector3 origin, BitArray neighbors, Color32 color)
@@ -336,6 +250,9 @@ namespace TheAshBot.VoxelEngine
 
             int startVertexIndex = vertices.Count;
 
+
+            short uvIndex = AddColorToTexture(color);
+
             // Front
             if (neighbors.GetBit(0) == 0)
             {
@@ -346,7 +263,7 @@ namespace TheAshBot.VoxelEngine
                     origin + new Vector3(0, cellSize, cellSize), // 2
                     origin + new Vector3(0, 0, cellSize), // 3
                 });
-                AddUV(color);
+                AddUV(uvIndex);
                 AddTriangles(ref triangles, startVertexIndex);
                 startVertexIndex += 4;
             }
@@ -360,7 +277,7 @@ namespace TheAshBot.VoxelEngine
                     origin + new Vector3(cellSize, cellSize, 0), // 2
                     origin + new Vector3(cellSize, 0, 0), // 3
                 });
-                AddUV(color);
+                AddUV(uvIndex);
                 AddTriangles(ref triangles, startVertexIndex);
                 startVertexIndex += 4;
             }
@@ -374,7 +291,7 @@ namespace TheAshBot.VoxelEngine
                     origin + new Vector3(0, cellSize, 0), // 2
                     origin + new Vector3(0, 0, 0), // 3
                 });
-                AddUV(color);
+                AddUV(uvIndex);
                 AddTriangles(ref triangles, startVertexIndex);
                 startVertexIndex += 4;
             }
@@ -388,7 +305,7 @@ namespace TheAshBot.VoxelEngine
                     origin + new Vector3(cellSize, cellSize, cellSize), // 2
                     origin + new Vector3(cellSize, 0, cellSize), // 3
                 });
-                AddUV(color);
+                AddUV(uvIndex);
                 AddTriangles(ref triangles, startVertexIndex);
                 startVertexIndex += 4;
             }
@@ -402,7 +319,7 @@ namespace TheAshBot.VoxelEngine
                     origin + new Vector3(cellSize, cellSize, cellSize), // 2
                     origin + new Vector3(cellSize, cellSize, 0), // 3
                 });
-                AddUV(color);
+                AddUV(uvIndex);
                 AddTriangles(ref triangles, startVertexIndex);
                 startVertexIndex += 4;
             }
@@ -416,25 +333,42 @@ namespace TheAshBot.VoxelEngine
                     origin + new Vector3(cellSize, 0, 0), // 2
                     origin + new Vector3(cellSize, 0, cellSize), // 3
                 });
-                AddUV(color);
+                AddUV(uvIndex);
                 AddTriangles(ref triangles, startVertexIndex);
             }
         }
 
-        private void AddUV(Color32 color)
+        /// <summary>
+        /// Adds a color to the UV Texture.
+        /// </summary>
+        /// <param name="color">The color that is added to the UV texture.</param>
+        /// <returns>Texture index for the color for later use.</returns>
+        private short AddColorToTexture(Color32 color)
         {
-            short uvIndex;
+            Vector2 origin = new Vector2(Mathf.FloorToInt(textureIndex / 50f), textureIndex % 50);
 
-            uvIndex = (short)textureColorList.Count;
-            textureColorList.Add(color);
+            texture.SetPixel((int)origin.x, (int)origin.y, color);
 
-            Vector2 origin = new Vector2(Mathf.Round(uvIndex / 16f), uvIndex % 16);
+            textureIndex++;
+
+            return (short)(textureIndex - 1);
+        }
+        
+        /// <summary>
+        /// Get UV for a color.
+        /// </summary>
+        /// <param name="color">The color that is added to the UV texture.</param>
+        /// <returns>UV index for the color for later use.</returns>
+        private void AddUV(short textureIndex)
+        {
+            Vector2 origin = new Vector2(Mathf.FloorToInt(textureIndex / 50f), textureIndex % 50);
+
             uvs.AddRange(new List<Vector2>
             {
-                origin / 50f    , // 0
-                origin / 50f + new Vector2(0, UV_PIXEL_OFFSET), // 1
-                origin / 50f + new Vector2(UV_PIXEL_OFFSET, UV_PIXEL_OFFSET), // 2
-                origin / 50f + new Vector2(UV_PIXEL_OFFSET, 0), // 3
+                origin / 50f + new Vector2(UV_QUARTER_PIXEL_OFFSET, UV_QUARTER_PIXEL_OFFSET), // 0
+                origin / 50f + new Vector2(UV_QUARTER_PIXEL_OFFSET, UV_3_QUARTER_PIXEL_OFFSET), // 1
+                origin / 50f + new Vector2(UV_3_QUARTER_PIXEL_OFFSET, UV_3_QUARTER_PIXEL_OFFSET), // 2
+                origin / 50f + new Vector2(UV_3_QUARTER_PIXEL_OFFSET, UV_QUARTER_PIXEL_OFFSET), // 3
             });
         }
 
@@ -457,7 +391,7 @@ namespace TheAshBot.VoxelEngine
             }
 
             return false;
-        }
+        }/*
 
         private Texture2D GetTexture()
         {
@@ -467,12 +401,12 @@ namespace TheAshBot.VoxelEngine
             {
                 for (byte y = 0; y < size; y++)
                 {
-                    texture.SetPixel(x, y, /*textureColorList[x * 50 + y]*/ Color.white);
+                    texture.SetPixel(x, y, textureColorList[x * 50 + y]);
                 }
             }
 
             return texture;
-        }
+        }*/
 
 
     }
