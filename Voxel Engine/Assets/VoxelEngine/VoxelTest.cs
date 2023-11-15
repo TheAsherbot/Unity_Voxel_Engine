@@ -1,8 +1,7 @@
 using TheAshBot.ThreeDimentional;
 
-using Unity.VisualScripting.Dependencies.NCalc;
-
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace TheAshBot.VoxelEngine
 {
@@ -13,14 +12,11 @@ namespace TheAshBot.VoxelEngine
 
 
 
-        [SerializeField] private Texture texture;
+        [SerializeField] private RawImage rawImage;
 
 
         private void Start()
         {
-
-
-
             #region Grid
 
             VoxelRenderer voxelRenderer = new VoxelRenderer(new Vector3(-8, -8, -8));
@@ -44,7 +40,10 @@ namespace TheAshBot.VoxelEngine
             grid.TriggerGridObjectChanged(0, 0, 0);
 
             #endregion
-            texture = voxelRenderer.texture;
+
+
+
+            rawImage.texture = voxelRenderer.texture;
         }
 
 
