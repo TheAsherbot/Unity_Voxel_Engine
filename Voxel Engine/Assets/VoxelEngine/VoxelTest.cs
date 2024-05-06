@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using QFSW.QC;
+using TheAshBot.PixelEngine;
 
 namespace TheAshBot.VoxelEngine
 {
@@ -31,9 +32,9 @@ namespace TheAshBot.VoxelEngine
 
             // PerlinNoise();
 
-            CheckerBoard();
+            // CheckerBoard();
 
-            // Half();
+            Half();
 
             // Full();
 
@@ -115,28 +116,19 @@ namespace TheAshBot.VoxelEngine
                     {
                         VoxelNode voxelNode = grid.GetGridObject(x, y, z);
 
-                        BitArray bits = new BitArray(2);
+                        voxelNode.isFilled = true;
+
                         if (x % 2 == 0)
                         {
-                            bits.SetBit(0, 1);
+                            voxelNode.isFilled = !voxelNode.isFilled;
                         }
                         if (y % 2 == 0)
                         {
-                            bits.SetBit(1, 1);
+                            voxelNode.isFilled = !voxelNode.isFilled;
                         }
                         if (z % 2 == 0)
                         {
-                            if ((bits.GetBit(0) == 0 && bits.GetBit(1) == 1) || (bits.GetBit(0) == 1 && bits.GetBit(1) == 0))
-                            {
-                                voxelNode.isFilled = true;
-                            }
-                        }
-                        else
-                        {
-                            if ((bits.GetBit(0) == 1 && bits.GetBit(1) == 1) || (bits.GetBit(0) == 0 && bits.GetBit(1) == 0))
-                            {
-                                voxelNode.isFilled = true;
-                            }
+                            voxelNode.isFilled = !voxelNode.isFilled;
                         }
 
                         grid.SetGridObjectWithoutNotifying(x, y, z, voxelNode);
