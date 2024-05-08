@@ -8,8 +8,8 @@ namespace TheAshBot.PixelEngine
     public class PixelRenderer
     {
 
-        private static readonly float UV_3_QUARTER_PIXEL_OFFSET = 0.015f;
-        private static readonly float UV_QUARTER_PIXEL_OFFSET = 0.005f;
+        private static float UV_TOP_RIGHT_OFFSET_AMOUNT = 0.045f;
+        private static float UV_BOTTOM_LEFT_OFFSET_AMOUNT = 0.015f;
 
         private PixelChunk pixelChunk;
         private MeshFilter meshFilter;
@@ -58,7 +58,8 @@ namespace TheAshBot.PixelEngine
             vertices = new List<Vector3>();
             uvs = new List<Vector2>();
             triangles = new List<int>();
-            texture = new Texture2D(50, 50);
+
+            texture = new Texture2D(pixelChunk.GetGrid().GetWidth(), pixelChunk.GetGrid().GetHeight());
 
 
             Mesh mesh = new Mesh();
@@ -135,7 +136,7 @@ namespace TheAshBot.PixelEngine
         /// <returns>Texture index for the color for later use.</returns>
         private short AddColorToTexture(Color32 color)
         {
-            Vector2 origin = new Vector2(Mathf.FloorToInt(textureIndex / 50f), textureIndex % 50);
+            Vector2 origin = new Vector2(Mathf.FloorToInt(textureIndex / pixelChunk.GetGrid().GetHeight()), textureIndex % pixelChunk.GetGrid().GetHeight());
 
             texture.SetPixel((int)origin.x, (int)origin.y, color);
 
@@ -151,14 +152,14 @@ namespace TheAshBot.PixelEngine
         /// <returns>UV index for the color for later use.</returns>
         private void AddUV(short textureIndex)
         {
-            Vector2 origin = new Vector2(Mathf.FloorToInt(textureIndex / 50f), textureIndex % 50);
+            Vector2 origin = new Vector2(Mathf.FloorToInt(textureIndex / pixelChunk.GetGrid().GetHeight()), textureIndex % pixelChunk.GetGrid().GetHeight());
 
             uvs.AddRange(new List<Vector2>
             {
-                origin / 50f + new Vector2(UV_QUARTER_PIXEL_OFFSET, UV_QUARTER_PIXEL_OFFSET), // 0
-                origin / 50f + new Vector2(UV_QUARTER_PIXEL_OFFSET, UV_3_QUARTER_PIXEL_OFFSET), // 1
-                origin / 50f + new Vector2(UV_3_QUARTER_PIXEL_OFFSET, UV_3_QUARTER_PIXEL_OFFSET), // 2
-                origin / 50f + new Vector2(UV_3_QUARTER_PIXEL_OFFSET, UV_QUARTER_PIXEL_OFFSET), // 3
+                origin / pixelChunk.GetGrid().GetHeight() + new Vector2(UV_BOTTOM_LEFT_OFFSET_AMOUNT, UV_BOTTOM_LEFT_OFFSET_AMOUNT), // 0
+                origin / pixelChunk.GetGrid().GetHeight() + new Vector2(UV_BOTTOM_LEFT_OFFSET_AMOUNT, UV_TOP_RIGHT_OFFSET_AMOUNT), // 1
+                origin / pixelChunk.GetGrid().GetHeight() + new Vector2(UV_TOP_RIGHT_OFFSET_AMOUNT, UV_TOP_RIGHT_OFFSET_AMOUNT), // 2
+                origin / pixelChunk.GetGrid().GetHeight() + new Vector2(UV_TOP_RIGHT_OFFSET_AMOUNT, UV_BOTTOM_LEFT_OFFSET_AMOUNT), // 3
             });
         }
 

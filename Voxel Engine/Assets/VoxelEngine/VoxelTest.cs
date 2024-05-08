@@ -27,16 +27,17 @@ namespace TheAshBot.VoxelEngine
             grid = voxelRenderer.GetGrid();
 
 
+            ColorVoxelsToHSVSpectrum();
 
-            ColorVoxels();
+            // ColorVoxelsRandomly();
 
             // PerlinNoise();
 
             // CheckerBoard();
 
-            Half();
+            // Half();
 
-            // Full();
+            Full();
 
 
 
@@ -86,7 +87,27 @@ namespace TheAshBot.VoxelEngine
         }
 
         [Command]
-        private void ColorVoxels()
+        private void ColorVoxelsToHSVSpectrum()
+        {
+            for (int x = 0; x < grid.GetWidth(); x++)
+            {
+                for (int y = 0; y < grid.GetHeight(); y++)
+                {
+                    for (int z = 0; z < grid.GetDepth(); z++)
+                    {
+                        VoxelNode voxelNode = grid.GetGridObject(x, y, z);
+                        voxelNode.color = Color.HSVToRGB((float)x / grid.GetWidth(), (float)y / grid.GetHeight(), (float)z / grid.GetDepth());
+                        grid.SetGridObjectWithoutNotifying(x, y, z, voxelNode);
+                    }
+                }
+            }
+
+            rawImage.texture = voxelRenderer.texture;
+            grid.TriggerGridObjectChanged(0, 0, 0);
+        }
+
+        [Command]
+        private void ColorVoxelsRandomly()
         {
             for (int x = 0; x < grid.GetWidth(); x++)
             {

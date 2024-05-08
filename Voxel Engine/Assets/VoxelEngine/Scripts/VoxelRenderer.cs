@@ -8,8 +8,8 @@ namespace TheAshBot.VoxelEngine
     public class VoxelRenderer
     {
 
-        private static readonly float UV_3_QUARTER_PIXEL_OFFSET = 0.015f;
-        private static readonly float UV_QUARTER_PIXEL_OFFSET = 0.005f;
+        private static readonly float UV_TOP_RIGHT_OFFSET_AMOUNT = 0.015f;
+        private static readonly float UV_BOTTOM_LEFT_OFFSRT_AMOUNT = 0.005f;
 
         private static BitArray FRONT_FACE
         {
@@ -365,10 +365,10 @@ namespace TheAshBot.VoxelEngine
 
             uvs.AddRange(new List<Vector2>
             {
-                origin / 50f + new Vector2(UV_QUARTER_PIXEL_OFFSET, UV_QUARTER_PIXEL_OFFSET), // 0
-                origin / 50f + new Vector2(UV_QUARTER_PIXEL_OFFSET, UV_3_QUARTER_PIXEL_OFFSET), // 1
-                origin / 50f + new Vector2(UV_3_QUARTER_PIXEL_OFFSET, UV_3_QUARTER_PIXEL_OFFSET), // 2
-                origin / 50f + new Vector2(UV_3_QUARTER_PIXEL_OFFSET, UV_QUARTER_PIXEL_OFFSET), // 3
+                origin / 50f + new Vector2(UV_BOTTOM_LEFT_OFFSRT_AMOUNT, UV_BOTTOM_LEFT_OFFSRT_AMOUNT), // 0
+                origin / 50f + new Vector2(UV_BOTTOM_LEFT_OFFSRT_AMOUNT, UV_TOP_RIGHT_OFFSET_AMOUNT), // 1
+                origin / 50f + new Vector2(UV_TOP_RIGHT_OFFSET_AMOUNT, UV_TOP_RIGHT_OFFSET_AMOUNT), // 2
+                origin / 50f + new Vector2(UV_TOP_RIGHT_OFFSET_AMOUNT, UV_BOTTOM_LEFT_OFFSRT_AMOUNT), // 3
             });
         }
 

@@ -1,7 +1,6 @@
 using QFSW.QC;
 
 using TheAshBot.TwoDimentional;
-using TheAshBot.VoxelEngine;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -28,15 +27,17 @@ namespace TheAshBot.PixelEngine
 
 
 
-            ColorVoxels();
+            ColorVoxelsToHSVSpectrum();
+
+            // ColorVoxelsRandomly();
 
             // PerlinNoise();
 
             // CheckerBoard();
 
-            Half();
+            // Half();
 
-            // Full();
+            Full();
 
 
 
@@ -84,12 +85,31 @@ namespace TheAshBot.PixelEngine
         }
 
         [Command]
-        private void ColorVoxels()
+        private void ColorVoxelsToHSVSpectrum()
         {
             for (int x = 0; x < grid.GetWidth(); x++)
             {
                 for (int y = 0; y < grid.GetHeight(); y++)
                 {
+                    
+                    PixelNode pixelNode = grid.GetGridObject(x, y);
+                    pixelNode.color = Color.HSVToRGB((float)x / grid.GetWidth(), (float)y / grid.GetHeight(), 1);
+                    grid.SetGridObjectWithoutNotifying(x, y, pixelNode);
+                }
+            }
+
+            rawImage.texture = pixelRenderer.texture;
+            grid.TriggerGridObjectChanged(0, 0);
+        }
+
+        [Command]
+        private void ColorVoxelsRandomly()
+        {
+            for (int x = 0; x < grid.GetWidth(); x++)
+            {
+                for (int y = 0; y < grid.GetHeight(); y++)
+                {
+                    
                     PixelNode pixelNode = grid.GetGridObject(x, y);
                     pixelNode.color = Color.HSVToRGB(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f));
                     grid.SetGridObjectWithoutNotifying(x, y, pixelNode);
