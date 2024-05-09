@@ -1,0 +1,83 @@
+---------------------------------------------------------------------------------------------------- CPU AND GPU SPEED ----------------------------------------------------------------------------------------------------
+
+Render Direcly through Graphix API
+
+1.	Start {PixelTest.Start: 15.12 ms, Total: 69.02 ms, RenderThread: 0.48 ms}
+	Update {DummyClass.Update: 0.004 ms, Total: 1.04 ms, RenderThread: 0.19 ms}
+2.	Start {PixelTest.Start: 28.85 ms, Total: 67.02 ms, RenderThread: 0.53 ms}
+	Update {DummyClass.Update: 0.003 ms, Total: 1.05 ms, RenderThread: 0.44 ms}
+3.	Start {PixelTest.Start: 27.27 ms, Total: 70.03 ms, RenderThread: 0.44 ms}
+	Update {DummyClass.Update: 0.007 ms, Total: 1.15 ms, RenderThread: 0.2 ms}
+4.	Start {PixelTest.Start: 28.24 ms, Total: 68.26 ms, RenderThread: 0.7 ms}
+	Update {DummyClass.Update: 0.004 ms, Total: 0.78 ms, RenderThread: 0.26 ms}
+5.	Start {PixelTest.Start: 26.87 ms, Total: 69.18 ms, RenderThread: 0.31 ms}
+	Update {DummyClass.Update: 0.004 ms, Total: 0.88 ms, RenderThread: 0.19 ms}
+6.	Start {PixelTest.Start: 27.65 ms, Total: 67.41 ms, RenderThread: 0.59 ms}
+	Update {DummyClass.Update: 0.006 ms, Total: 0.98 ms, RenderThread: 0.59 ms}
+7.	Start {PixelTest.Start: 27.76 ms, Total: 69.22 ms, RenderThread: 0.44 ms}
+	Update {DummyClass.Update: 0.005 ms, Total: 1.3 ms, RenderThread: 0.22 ms}
+8.	Start {PixelTest.Start: 26.87 ms, Total: 67.76 ms, RenderThread: 0.42 ms}
+	Update {DummyClass.Update: 0.006 ms, Total: 1.07 ms, RenderThread: 0.47 ms}
+9.	Start {PixelTest.Start: 26.92 ms, Total: 79.25 ms, RenderThread: 0.54 ms}
+	Update {DummyClass.Update: 0.004 ms, Total: 0.96 ms, RenderThread: 0.43 ms}
+10. Start {PixelTest.Start: 26.67 ms, Total: 71.78 ms, RenderThread: 0.27 ms}
+	Update {DummyClass.Update: 0.006 ms, Total: 0.98 ms, RenderThread: 0.32 ms}
+
+Average		Start {PixelTest.Start: 26.222 ms, Total: 69.893 ms, RenderThread: 0.409 ms}
+			Update {DummyClass.Update: 0.0044 ms, Total: 1.019 ms, RenderThread: 0.313 ms}
+
+
+
+Render through Unity Gameobject
+
+1.	Start {PixelTest.Start: 15.21 ms, Total: 60.09 ms, RenderThread: 0.69 ms}
+	Update {Total: 1.1 ms, RenderThread: 1.35 ms}
+2.	Start {PixelTest.Start: 27.62 ms, Total: 69.13 ms, RenderThread: 0.5 ms}
+	Update {Total: 1.01 ms, RenderThread: 0.28 ms}
+3.	Start {PixelTest.Start: 28.32 ms, Total: 69.56 ms, RenderThread: 0.46 ms}
+	Update {Total: 1.1 ms, RenderThread: 0.74 ms}
+4.	Start {PixelTest.Start: 28.53 ms, Total: 71.76 ms, RenderThread: 0.71 ms}
+	Update {Total: 1.0 ms, RenderThread: 0.43 ms}
+5.	Start {PixelTest.Start: 27.84 ms, Total: 68.45 ms, RenderThread: 0.52 ms}
+	Update {Total: 1.01 ms, RenderThread: 0.6 ms}
+6.	Start {PixelTest.Start: 26.26 ms, Total: 70.33 ms, RenderThread: 0.61 ms}
+	Update {Total: 1.47 ms, RenderThread: 0.25 ms}
+7.	Start {PixelTest.Start: 28.80 ms, Total: 68.03 ms, RenderThread: 0.6 ms}
+	Update {Total: 0.98 ms, RenderThread: 0.88 ms}
+8.	Start {PixelTest.Start: 26.75 ms, Total: 67.42 ms, RenderThread: 0.35 ms}
+	Update {Total: 1.22 ms, RenderThread: 1.15 ms}
+9.	Start {PixelTest.Start: 27.84 ms, Total: 67.29 ms, RenderThread: 0.52 ms}
+	Update {Total: 1.31 ms, RenderThread: 0.37 ms}
+10. Start {PixelTest.Start: 26.62 ms, Total: 67.99 ms, RenderThread: 0.64 ms}
+	Update {Total: 1.14 ms, RenderThread: 1.41 ms}
+
+Average		Start {PixelTest.Start: 26.379 ms, Total: 68.005 ms, RenderThread: 0.461 ms}
+			Update {Total: 1.134 ms, RenderThread: 0.746 ms}
+
+
+
+---------------------------------------------------------------------------------------------------- RAM USEAGE ----------------------------------------------------------------------------------------------------
+
+
+
+Render Direcly through Graphix API
+
+1.	Allocated Memory Distribution {Native: 0.86 GB, Managed: 0.82 GB, Graphics (Estimated): 376.5 MB, Untracked*: 0 B}
+	Top Unity Object Categories {Textures: 377.6 MB, Render Textures: 312.3 MB, Materials: 396.0 KB, Meshes: 354.5 KB}
+2.	Allocated Memory Distribution {Native: 0.90 GB, Managed: 0.82 GB, Graphics (Estimated): 376.5 MB, Untracked*: 0 B}
+	Top Unity Object Categories {Textures: 377.7 MB, Render Textures: 312.4 MB, Materials: 396.0 KB, Meshes: 354.5 KB}
+3.	Allocated Memory Distribution {Native: 0.87 GB, Managed: 0.82 GB, Graphics (Estimated): 376.5 MB, Untracked*: 0 B}
+	Top Unity Object Categories {Textures: 377.6 MB, Render Textures: 312.3 MB, Materials: 396.0 KB, Meshes: 354.5 KB}
+
+
+Render through Unity Gameobject
+
+1.	Allocated Memory Distribution {Native: 0.87 GB, Managed: 0.82 GB, Graphics (Estimated): 376.4 MB, Untracked*: 0 B}
+	Top Unity Object Categories {Textures: 377.4 MB, Render Textures: 312.3 MB, Materials: 385.6 KB, Meshes: 354.5 KB}
+2.	Allocated Memory Distribution {Native: 0.86 GB, Managed: 0.82 GB, Graphics (Estimated): 376.5 MB, Untracked*: 0 B}
+	Top Unity Object Categories {Textures: 377.6 MB, Render Textures: 312.3 MB, Materials: 396.0 KB, Meshes: 354.5 KB}
+3.	Allocated Memory Distribution {Native: 0.86 GB, Managed: 0.82 GB, Graphics (Estimated): 376.5 MB, Untracked*: 0 B}
+	Top Unity Object Categories {Textures: 377.6 MB, Render Textures: 312.3 MB, Materials: 396.0 KB, Meshes: 354.5 KB}
+
+
+----------------------------------------- RESUALTS ARE ABOUT THE SAME AMOUNT -----------------------------------------

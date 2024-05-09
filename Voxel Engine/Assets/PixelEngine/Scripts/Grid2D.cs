@@ -86,6 +86,11 @@ namespace TheAshBot.PixelEngine
             return cellSize;
         }
 
+        public Vector2 GetOriginPosition()
+        {
+            return originPosition;
+        }
+
         /// <summary>
         /// This gets the world position of a grid object using its x, and y position
         /// </summary>
