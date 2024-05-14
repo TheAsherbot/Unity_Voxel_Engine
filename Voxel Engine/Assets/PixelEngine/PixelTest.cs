@@ -31,13 +31,13 @@ namespace TheAshBot.PixelEngine
 
             // ColorVoxelsRandomly();
 
-            // PerlinNoise();
+            PerlinNoise();
 
             // CheckerBoard();
 
             // Half();
 
-            Full();
+            // Full();
 
 
 
@@ -61,6 +61,7 @@ namespace TheAshBot.PixelEngine
                 pixelNode.isFilled = false;
                 grid.SetGridObject(mousePosition, pixelNode);
             }
+            pixelRenderer.Render();
         }
 
 
@@ -70,13 +71,11 @@ namespace TheAshBot.PixelEngine
         {
             for (int x = 0; x < grid.GetWidth(); x++)
             {
-                for (int y = 0; y < grid.GetHeight(); y++)
+                int height = Mathf.RoundToInt(Mathf.PerlinNoise(x / 16f, Random.Range(0, 1)) * 16);
+                for (int y = 0; y < height; y++)
                 {
-                    bool isFilled = Mathf.RoundToInt(Mathf.PerlinNoise(x / 16f, y / 16f) * 16) > 0.5f ? true : false;
-
                     PixelNode pixelNode = grid.GetGridObject(x, y);
-                    pixelNode.isFilled = isFilled;
-                    pixelNode.color = Color.HSVToRGB(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f));
+                    pixelNode.isFilled = true;
                     grid.SetGridObjectWithoutNotifying(x, y, pixelNode);
                 }
             }

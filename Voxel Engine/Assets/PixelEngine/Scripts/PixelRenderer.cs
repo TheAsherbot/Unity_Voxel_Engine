@@ -52,27 +52,28 @@ namespace TheAshBot.PixelEngine
             mesh = new Mesh();
             mesh.name = "Pixel Grid Mesh";
             renderParams = new RenderParams(material);
+            vertices = new List<Vector3>();
+            uvs = new List<Vector2>();
+            triangles = new List<int>();
 
-            // Setup Dummy Object
-            GameObject gameObject = new GameObject("Pixel Grid Mesh");
-            gameObject.AddComponent<DummyClass>().OnBeforeRender += OnBeforeRender;
-            meshFilter = gameObject.AddComponent<MeshFilter>();
-            meshRenderer = gameObject.AddComponent<MeshRenderer>();
-            meshCollider = gameObject.AddComponent<MeshCollider>();
-
-            // Setup Chunck
+            // Setup Chunk
             pixelChunk = new PixelChunk(1, origin);
             pixelChunk.GetGrid().OnGridValueChanged += Grid_OnValueChanged;
 
-            for (int x = 0; x < GetGrid().GetWidth(); x++)
+            for (byte x = 0; x < GetGrid().GetWidth(); x++)
             {
-                for (int y = 0; y < GetGrid().GetHeight(); y++)
+                for (byte y = 0; y < GetGrid().GetHeight(); y++)
                 {
                     GetGrid().GetGridObject(x, y).UpdateNeighbors();
                 }
             }
         }
 
+
+        public void Render()
+        {
+            Graphics.RenderMesh(renderParams, mesh, 0, transformRotationScaleMatrix);
+        }
 
         public GenericGrid2D<PixelNode> GetGrid()
         {
@@ -84,11 +85,12 @@ namespace TheAshBot.PixelEngine
             GenericGrid2D<PixelNode> grid = pixelChunk.GetGrid();
 
 
+            
             textureIndex = 0;
-            vertices = new List<Vector3>();
-            uvs = new List<Vector2>();
-            triangles = new List<int>();
-
+            mesh.Clear();
+            vertices.Clear();
+            uvs.Clear(); 
+            triangles.Clear();
             texture = new Texture2D(grid.GetWidth(), grid.GetHeight());
 
 
@@ -120,19 +122,10 @@ namespace TheAshBot.PixelEngine
             mesh.RecalculateBounds();
             mesh.RecalculateTangents();
 
-            // meshRenderer.material = material;
-            // meshFilter.sharedMesh = mesh;
-            // meshCollider.sharedMesh = mesh;
-            
             renderParams.material = material;
 
             transformRotationScaleMatrix.SetTRS(grid.GetOriginPosition() + new Vector2(grid.GetWidth() / 2, grid.GetHeight() / 2), Quaternion.identity, Vector3.one);
 
-        }
-
-        public void OnBeforeRender()
-        {
-            Graphics.RenderMesh(renderParams, mesh, 0, transformRotationScaleMatrix);
         }
 
 
@@ -218,24 +211,6 @@ namespace TheAshBot.PixelEngine
 
             return false;
         }
-        
-        /*
-
-        private Texture2D GetTexture()
-        {
-            byte size = 50;
-
-            for (byte x = 0; x < size; x++)
-            {
-                for (byte y = 0; y < size; y++)
-                {
-                    texture.SetPixel(x, y, textureColorList[x * 50 + y]);
-                }
-            }
-
-            return texture;
-        }*/
-
 
     }
 }
