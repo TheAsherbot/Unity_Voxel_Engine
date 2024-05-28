@@ -26,9 +26,6 @@ namespace TheAshBot.PixelEngine
         private static float UV_BOTTOM_LEFT_OFFSET_AMOUNT = 0.015f;
 
         private PixelChunk pixelChunk;
-        private MeshFilter meshFilter;
-        private MeshRenderer meshRenderer;
-        private MeshCollider meshCollider;
 
         private List<Vector3> vertices;
         private List<Vector2> uvs;
@@ -84,8 +81,6 @@ namespace TheAshBot.PixelEngine
         {
             GenericGrid2D<PixelNode> grid = pixelChunk.GetGrid();
 
-
-            
             textureIndex = 0;
             mesh.Clear();
             vertices.Clear();
@@ -125,7 +120,6 @@ namespace TheAshBot.PixelEngine
             renderParams.material = material;
 
             transformRotationScaleMatrix.SetTRS(grid.GetOriginPosition() + new Vector2(grid.GetWidth() / 2, grid.GetHeight() / 2), Quaternion.identity, Vector3.one);
-
         }
 
 

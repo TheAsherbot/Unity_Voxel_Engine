@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using QFSW.QC;
-using TheAshBot.PixelEngine;
 
 namespace TheAshBot.VoxelEngine
 {
@@ -61,6 +60,8 @@ namespace TheAshBot.VoxelEngine
                 voxelNode.isFilled = false;
                 grid.SetGridObject(mousePosition, voxelNode);
             }
+
+            voxelRenderer.Render();
         }
 
 

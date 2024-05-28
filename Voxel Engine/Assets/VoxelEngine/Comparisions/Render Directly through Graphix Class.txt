@@ -1,0 +1,65 @@
+---------------------------------------------------------------------------------------------------- CPU AND GPU SPEED ----------------------------------------------------------------------------------------------------
+
+Render Direcly through Graphix API
+
+1.	Start {VoxelTest.Start: 13.46 ms, Total: 5.79 ms, RenderThread: 0.27 ms}
+	Update {VoxelTest.Update: 0.006 ms, Total: 0.83 ms, RenderThread: 0.56 ms}
+2.	Start {VoxelTest.Start: 11.95 ms, Total: 6.15 ms, RenderThread: 0.3 ms}
+	Update {VoxelTest.Update: 0.005 ms, Total: 0.76 ms, RenderThread: 0.09 ms}
+3.	Start {VoxelTest.Start: 12.36 ms, Total: 5.58 ms, RenderThread: 0.19 ms}
+	Update {VoxelTest.Update: 0.03 ms, Total: 0.94 ms, RenderThread: 0.27 ms}
+4.	Start {VoxelTest.Start: 12.77 ms, Total: 5.43 ms, RenderThread: 0.21 ms}
+	Update {VoxelTest.Update: 0.006 ms, Total: 0.76 ms, RenderThread: 0.27 ms}
+5.	Start {VoxelTest.Start: 11.77 ms, Total: 6.41 ms, RenderThread: 0.58 ms}
+	Update {VoxelTest.Update: 0.005 ms, Total: 0.86 ms, RenderThread: 0.18 ms}
+
+Average		Start {VoxelTest.Start: 0 ms, Total: 0 ms, RenderThread: 0 ms}
+			Update {VoxelTest.Update: 0 ms, Total: 0 ms, RenderThread: 0 ms}
+
+
+
+Render through Unity Gameobject
+
+1.	Start {VoxelTest.Start: 92.3 ms, Total: 87.64 ms, RenderThread: 0.68 ms}
+	Update {Total: 1.09 ms, RenderThread: 0.87 ms}
+2.	Start {VoxelTest.Start: 73.03 ms, Total: 71.1 ms, RenderThread: 0.73 ms}
+	Update {Total: 1.38 ms, RenderThread: 0.73 ms}
+3.	Start {VoxelTest.Start: 73.44 ms, Total: 73.64 ms, RenderThread: 0.72 ms}
+	Update {Total: 1.09 ms, RenderThread: 0.31 ms}
+4.	Start {VoxelTest.Start: 69.01 ms, Total: 69.91 ms, RenderThread: 0.68 ms}
+	Update {Total: 1.22 ms, RenderThread: 0.26 ms}
+5.	Start {VoxelTest.Start: 82.81 ms, Total: 78.36 ms, RenderThread: 0.76 ms}
+	Update {Total: 1.17 ms, RenderThread: 0.34 ms}
+
+Average		Start {VoxelTest.Start: 78.118 ms, Total: 76.13 ms, RenderThread: 0.714 ms}
+			Update {Total: 1.19 ms, RenderThread: 0.502 ms}
+
+--------------------------- RESUALTS ARE TOWARDS GRAPHIX API ---------------------------
+
+
+
+---------------------------------------------------------------------------------------------------- RAM USEAGE ----------------------------------------------------------------------------------------------------
+
+
+
+Render Direcly through Graphix API
+
+1.	Allocated Memory Distribution {Native: 0.87 GB, Managed: 0.76 GB, Graphics (Estimated): 322.0 MB, Untracked*: 0 B}
+	Top Unity Object Categories {Textures: 337.3 MB, Render Textures: 273.9 MB, Materials: 397.7 KB, Meshes: 354.5 KB}
+2.	Allocated Memory Distribution {Native: 0.86 GB, Managed: 0.76 GB, Graphics (Estimated): 323.0 MB, Untracked*: 0 B}
+	Top Unity Object Categories {Textures: 339.4 MB, Render Textures: 274.0 MB, Materials: 407.5 KB, Meshes: 354.5 KB}
+3.	Allocated Memory Distribution {Native: 0.86 GB, Managed: 0.76 GB, Graphics (Estimated): 323.0 MB, Untracked*: 0 B}
+	Top Unity Object Categories {Textures: 339.4 MB, Render Textures: 274.0 MB, Materials: 407.5 KB, Meshes: 354.5 KB}
+
+
+Render through Unity Gameobject
+
+1.	Allocated Memory Distribution {Native: 0.87 GB, Managed: 0.82 GB, Graphics (Estimated): 376.4 MB, Untracked*: 0 B}
+	Top Unity Object Categories {Textures: 377.4 MB, Render Textures: 312.3 MB, Materials: 385.6 KB, Meshes: 354.5 KB}
+2.	Allocated Memory Distribution {Native: 0.86 GB, Managed: 0.82 GB, Graphics (Estimated): 376.5 MB, Untracked*: 0 B}
+	Top Unity Object Categories {Textures: 377.6 MB, Render Textures: 312.3 MB, Materials: 396.0 KB, Meshes: 354.5 KB}
+3.	Allocated Memory Distribution {Native: 0.86 GB, Managed: 0.82 GB, Graphics (Estimated): 376.5 MB, Untracked*: 0 B}
+	Top Unity Object Categories {Textures: 377.6 MB, Render Textures: 312.3 MB, Materials: 396.0 KB, Meshes: 354.5 KB}
+
+
+----------------------------------------- RESUALTS ARE TOWARDS GRAPHIX API -----------------------------------------

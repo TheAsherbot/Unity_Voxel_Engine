@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 
+using TheAshBot.PixelEngine;
+
 using UnityEngine;
 
 
@@ -68,9 +70,6 @@ namespace TheAshBot.VoxelEngine
 
 
         private VoxelChunk voxelChunk;
-        private MeshFilter meshFilter;
-        private MeshRenderer meshRenderer;
-        private MeshCollider meshCollider;
 
         private List<Vector3> vertices;
         private List<Vector2> uvs;
@@ -80,15 +79,22 @@ namespace TheAshBot.VoxelEngine
         public Texture2D texture;
         private short textureIndex;
 
+        private Material material;
+        private Mesh mesh;
+        private Matrix4x4 transformRotationScaleMatrix;
+        private RenderParams renderParams;
+
 
         public VoxelRenderer(Vector3 origin)
         {
-            Material material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-
-            GameObject gameObject = new GameObject("Voxel Grid Mesh");
-            meshFilter = gameObject.AddComponent<MeshFilter>();
-            meshRenderer = gameObject.AddComponent<MeshRenderer>();
-            meshCollider = gameObject.AddComponent<MeshCollider>();
+            material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            transformRotationScaleMatrix = new Matrix4x4();
+            mesh = new Mesh();
+            mesh.name = "Pixel Grid Mesh";
+            renderParams = new RenderParams(material);
+            vertices = new List<Vector3>();
+            uvs = new List<Vector2>();
+            triangles = new List<int>();
 
             voxelChunk = new VoxelChunk(1, origin);
             voxelChunk.GetGrid().OnGridValueChanged += Grid_OnValueChanged;
@@ -103,16 +109,25 @@ namespace TheAshBot.VoxelEngine
                     }
                 }
             }
+
+            UpdateVoxels();
         }
 
+
+        public void Render()
+        {
+            Graphics.RenderMesh(renderParams, mesh, 0, transformRotationScaleMatrix);
+        }
 
         public GenericGrid3D<VoxelNode> GetGrid()
         {
             return voxelChunk.GetGrid();
         }
 
-        public void RenderVoxels()
+        public void UpdateVoxels()
         {
+            GenericGrid3D<VoxelNode> grid = voxelChunk.GetGrid();
+
             textureIndex = 0;
             vertices = new List<Vector3>();
             uvs = new List<Vector2>();
@@ -120,13 +135,13 @@ namespace TheAshBot.VoxelEngine
             texture = new Texture2D(50, 50);
 
 
-            Mesh mesh = new Mesh();
+            mesh = new Mesh();
             mesh.name = "Voxel Grid Mesh";
-            for (byte x = 0; x < voxelChunk.GetGrid().GetWidth(); x++)
+            for (byte x = 0; x < grid.GetWidth(); x++)
             {
-                for (byte y = 0; y < voxelChunk.GetGrid().GetHeight(); y++)
+                for (byte y = 0; y < grid.GetHeight(); y++)
                 {
-                    for (byte z = 0; z < voxelChunk.GetGrid().GetDepth(); z++)
+                    for (byte z = 0; z < grid.GetDepth(); z++)
                     {
                         if (IsFilled(x, y, z) == false)
                         {
@@ -167,7 +182,7 @@ namespace TheAshBot.VoxelEngine
                             neighbors.SetBit(5, 1);
                         }
 
-                        AddCube(voxelChunk.GetGrid().GetWorldPosition(x, y, z), neighbors, voxelChunk.GetGrid().GetGridObject(x, y, z).color);
+                        AddCube(grid.GetWorldPosition(x, y, z), neighbors, grid.GetGridObject(x, y, z).color);
                     }
                 }
             }
@@ -177,26 +192,24 @@ namespace TheAshBot.VoxelEngine
             mesh.SetUVs(0, uvs);
 
 
-            Material material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
             texture.filterMode = FilterMode.Point;
             texture.Apply();
             material.mainTexture = texture;
             material.color = Color.white;
-            meshRenderer.material = material;
+            renderParams.material = material;
 
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
             mesh.RecalculateTangents();
 
-            meshFilter.sharedMesh = mesh;
-            meshCollider.sharedMesh = mesh;
+            transformRotationScaleMatrix.SetTRS(grid.GetOriginPosition() + new Vector3(grid.GetWidth() / 2, grid.GetHeight() / 2, grid.GetDepth()), Quaternion.identity, Vector3.one);
         }
 
 
 
         private void Grid_OnValueChanged(int x, int y, int z)
         {
-            RenderVoxels();
+            UpdateVoxels();
         }
 
         /// <summary>
