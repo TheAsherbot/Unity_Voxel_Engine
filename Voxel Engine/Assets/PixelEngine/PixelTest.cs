@@ -61,7 +61,7 @@ namespace TheAshBot.PixelEngine
                 pixelNode.isFilled = false;
                 grid.SetGridObject(mousePosition, pixelNode);
             }
-            pixelRenderer.Render();
+            // pixelRenderer.Render();
         }
 
 

@@ -21,7 +21,7 @@ namespace TheAshBot.TwoDimentional.TopDownCharcterMovement
 
         private void FixedUpdate()
         {
-            rigidbody.velocity = velocityVector * movementSpeed;
+            rigidbody.linearVelocity = velocityVector * movementSpeed;
         }
 
 

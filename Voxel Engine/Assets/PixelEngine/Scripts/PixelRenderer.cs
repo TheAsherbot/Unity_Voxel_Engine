@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 
 using UnityEngine;
+using UnityEngine.Rendering;
 
 
 namespace TheAshBot.PixelEngine
@@ -64,8 +65,14 @@ namespace TheAshBot.PixelEngine
                     GetGrid().GetGridObject(x, y).UpdateNeighbors();
                 }
             }
+
+            RenderPipelineManager.beginContextRendering += RenderPipelineManager_OnBeforeRendering;
         }
 
+        private void RenderPipelineManager_OnBeforeRendering(ScriptableRenderContext scriptableRenderContext, List<Camera> cameras)
+        {
+            Render();
+        }
 
         public void Render()
         {

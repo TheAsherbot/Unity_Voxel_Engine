@@ -38,7 +38,7 @@ namespace TheAshBot.TwoDimentional.TopDownCharcterMovement
             {
                 case MovementType.Rigidbody:
                     if (rigidbody == null) AddSetRigidBody();
-                    rigidbody.velocity = velocityVector * movementSpeed;
+                    rigidbody.linearVelocity = velocityVector * movementSpeed;
                     break;
             }
         }
