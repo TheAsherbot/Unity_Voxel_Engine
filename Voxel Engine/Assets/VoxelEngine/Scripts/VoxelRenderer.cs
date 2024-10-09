@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 
-using TheAshBot.PixelEngine;
-
 using UnityEngine;
 
 
@@ -404,23 +402,7 @@ namespace TheAshBot.VoxelEngine
             }
 
             return false;
-        }/*
-
-        private Texture2D GetTexture()
-        {
-            byte size = 50;
-
-            for (byte x = 0; x < size; x++)
-            {
-                for (byte y = 0; y < size; y++)
-                {
-                    texture.SetPixel(x, y, textureColorList[x * 50 + y]);
-                }
-            }
-
-            return texture;
-        }*/
-
+        }
 
     }
 }
