@@ -22,6 +22,7 @@ namespace TheAshBot.PixelEngine
         {
             #region Grid
 
+
             pixelRenderer = new PixelRenderer(new Vector2(-8, -8));
             grid = pixelRenderer.GetGrid();
 
@@ -31,9 +32,9 @@ namespace TheAshBot.PixelEngine
 
             // ColorVoxelsRandomly();
 
-            PerlinNoise();
+            // PerlinNoise();
 
-            // CheckerBoard();
+            CheckerBoard();
 
             // Half();
 
@@ -42,10 +43,10 @@ namespace TheAshBot.PixelEngine
 
 
 
+
             grid.TriggerGridObjectChanged(0, 0);
 
             #endregion
-
 
 
             rawImage.texture = pixelRenderer.texture;
@@ -61,7 +62,8 @@ namespace TheAshBot.PixelEngine
                 pixelNode.isFilled = false;
                 grid.SetGridObject(mousePosition, pixelNode);
             }
-            // pixelRenderer.Render();
+            
+            pixelRenderer.Render();
         }
 
 
