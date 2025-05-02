@@ -93,7 +93,7 @@ namespace TheAshBot.WorldUI
                 RectTransform textRectTransfrom = textGameObject.AddComponent<RectTransform>();
                 TextMeshPro textTextMeshPro = textGameObject.AddComponent<TextMeshPro>();
 
-                textTextMeshPro.enableWordWrapping = text.woodWrap;
+                textTextMeshPro.textWrappingMode = (text.woodWrap ? TextWrappingModes.Normal : TextWrappingModes.NoWrap);
                 textTextMeshPro.fontSize = text.fontSize;
                 textTextMeshPro.text = text.text;
                 textTextMeshPro.alignment = text.alignment;

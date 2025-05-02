@@ -105,10 +105,10 @@ namespace TheAshBot.UI
                 GameObject textGameObject = new GameObject(text.name);
                 textGameObject.transform.parent = uiButtonGameObject.transform;
 
-                RectTransform textRectTransfrom = textGameObject.AddComponent<RectTransform>();
+                RectTransform textRectTransform = textGameObject.AddComponent<RectTransform>();
                 TextMeshProUGUI textTextMeshProGUI = textGameObject.AddComponent<TextMeshProUGUI>();
 
-                textTextMeshProGUI.enableWordWrapping = text.woodWrap;
+                textTextMeshProGUI.textWrappingMode = (text.woodWrap? TextWrappingModes.Normal : TextWrappingModes.NoWrap);
                 textTextMeshProGUI.fontSize = text.fontSize;
                 textTextMeshProGUI.text = text.text;
                 textTextMeshProGUI.alignment = text.alignment;
@@ -122,9 +122,9 @@ namespace TheAshBot.UI
                     textTextMeshProGUI.fontMaterial = text.fontMaterial;
                 }
 
-                textRectTransfrom.localScale = text.scale;
-                textRectTransfrom.sizeDelta = text.size;
-                textRectTransfrom.localPosition = text.position;
+                textRectTransform.localScale = text.scale;
+                textRectTransform.sizeDelta = text.size;
+                textRectTransform.localPosition = text.position;
             }
 
             return uiButton;
